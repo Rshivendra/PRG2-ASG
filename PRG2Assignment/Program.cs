@@ -164,28 +164,35 @@ void AvailRooms(List<Room> roomList)
     }
 }
 
+void DisplayGuests(List<Guest> guestList)
+{
+    Console.WriteLine("-------------------------------------------------------------");
+    Console.WriteLine("\t\t\tGuests");
+    Console.WriteLine("-------------------------------------------------------------");
+
+    Console.WriteLine("Name\t PassPort\t Duration of Stay\t Membership Status\t CheckedIn Status");
+    foreach (Guest guest in guestList)
+    {
+        Console.WriteLine(guest.ToString());
+    }
+}
+
+void RegisterGuest()
+{
+
+}
+
 // Main Program
 InitStay();
 InitRoom();
 InitGuest();
 
 // Basic Feautres:
+
+// Part 1)
+DisplayGuests(guestList);
+
 // Part 2)
 AvailRooms(roomList);
 
-void DisplayGuests()
-{
 
-}
-
-
-void DisplayAvailableRooms()
-{
-
-}
-
-
-void RegisterGuest()
-{
-
-}

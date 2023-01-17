@@ -30,7 +30,8 @@ namespace PRG2Assignment
         // Methods for Guest Class
         public override string ToString()
         {
-            return $"{this.Name,-10} {this.PassportNum,-10} {this.HotelStay,-10} {this.Member,-10} {this.IsCheckedIn,-10}";
+            int daysLeft = this.HotelStay.CheckoutDate.Subtract(this.HotelStay.CheckinDate).Days;
+            return $"{this.Name,-8} {this.PassportNum,-15} {daysLeft,-23} {this.Member.Status,-23} {this.IsCheckedIn,-10}";
         }
 
     }
