@@ -1,0 +1,15 @@
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.exe
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.deps.json
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.runtimeconfig.json
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.dll
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.pdb
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.csproj.AssemblyReference.cache
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.GeneratedMSBuildEditorConfig.editorconfig
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.AssemblyInfoInputs.cache
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.AssemblyInfo.cs
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.csproj.CoreCompileInputs.cache
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.dll
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\refint\PRG2Assignment.dll
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.pdb
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.genruntimeconfig.cache
+C:\Pranav\Year1\Semester 2\Programming 2\ASG\PRG2Assignment\PRG2Assignment\obj\Debug\net6.0\ref\PRG2Assignment.dll
