@@ -12,7 +12,7 @@ IDictionary<string, List<Stay>> stayDict = new Dictionary<string, List<Stay>>();
 IDictionary<string, bool> ischeckedInDict = new Dictionary<string, bool>();
 // used to check the amount of room booked by each person
 IDictionary<string, List<int>> roomsBookedDict = new Dictionary<string, List<int>>();
-// used to check the availability of the room
+// used to check the availability of the room in Stays.csv
 IDictionary<int, bool> roomsAvailDict = new Dictionary<int, bool>();
 // used to check the addons for each room
 IDictionary<int, List<bool>> roomAddonsDict = new Dictionary<int, List<bool>>();
