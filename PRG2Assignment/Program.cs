@@ -2,12 +2,11 @@
 
 // global data lists
 List<Guest> guestList = new List<Guest>();
-List<Stay> stayList = new List<Stay>();
 List<Room> roomList = new List<Room>();
 List<int> roomsBooked = new List<int>();
 
 // used to check each person's stay history
-IDictionary<string, List<Stay>> stayDict = new Dictionary<string, List<Stay>>();
+IDictionary<string, Stay> stayDict = new Dictionary<string, Stay>();
 // used to check each person's checkedIn status
 IDictionary<string, bool> ischeckedInDict = new Dictionary<string, bool>();
 // used to check the amount of room booked by each person
@@ -34,6 +33,24 @@ void RegisterGuest()
 
 }
 
+void InitGuest()
+{
+    using (StreamReader eachLine = new StreamReader("Guests.csv"))
+    {
+        string? rowReader = eachLine.ReadLine();
+        while ((rowReader = eachLine.ReadLine()) != null)
+        {
+            string[]? currentRow = rowReader.Split(",");
+
+            string passPortNo = currentRow[1];
+
+            Membership membership = new Membership(currentRow[2], int.Parse(currentRow[3]));
+            Stay stay = stayDict[passPortNo];
+            Guest guest = new Guest(currentRow[0], passPortNo, stay,membership, ischeckedInDict[passPortNo]);
+
+        }
+    }
+}
 
 void InitStay()
 {
@@ -44,11 +61,13 @@ void InitStay()
         {
             string[]? currentRow = rowReader.Split(",");
 
+            string passPortNo = currentRow[1];
+
             bool ischeckedIn = bool.Parse(currentRow[2]);
-            Stay currentStay = new Stay(DateTime.Parse(currentRow[3]), DateTime.Parse(currentRow[4]));
-            stayList.Add(currentStay);
-            ischeckedInDict.Add(currentRow[1], bool.Parse(currentRow[2]));
-            roomsBookedDict.Add(currentRow[1], roomsBooked);
+            Stay currentRowStay = new Stay(DateTime.Parse(currentRow[3]), DateTime.Parse(currentRow[4]));
+            stayDict.Add(passPortNo, currentRowStay);
+            ischeckedInDict.Add(passPortNo, ischeckedIn);
+            roomsBookedDict.Add(passPortNo, roomsBooked);
 
             // run thru the row to check for the roomNos taken by each person and implement each add-on for each room
             for (int i = 0; i < currentRow.Length; i++)
@@ -118,3 +137,8 @@ void InitRoom()
         }
     }
 }
+
+// Main Program
+InitStay();
+InitRoom();
+InitGuest();
