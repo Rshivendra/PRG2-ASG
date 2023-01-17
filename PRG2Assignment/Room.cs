@@ -31,7 +31,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return $"{RoomNumber,-10}{BedConfiguration,-10}{DailyRate,-10}{IsAvail,-10}";
+            return $"{RoomNumber,-9}{BedConfiguration,-24}{DailyRate,-16}{IsAvail,-20}";
         }
     }
 }

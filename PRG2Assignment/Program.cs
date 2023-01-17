@@ -24,23 +24,6 @@ IDictionary<int, bool> roomsNotAvailDict = new Dictionary<int, bool>();
 //List<int> roomsUnavailbleRooms = new List<int>();
 //HashSet<int> roomsUnavailbleRooms = new HashSet<int>();
 
-void DisplayGuests()
-{
-
-}
-
-
-void DisplayAvailableRooms()
-{
-
-}
-
-
-void RegisterGuest()
-{
-
-}
-
 void InitGuest()
 {
     using (StreamReader eachLine = new StreamReader("Guests.csv"))
@@ -165,8 +148,44 @@ void InitRoom()
     }
 }
 
+void AvailRooms(List<Room> roomList)
+{
+    Console.WriteLine("-------------------------------------------------------------");
+    Console.WriteLine("\t\t\tAvailable Rooms");
+    Console.WriteLine("-------------------------------------------------------------");
+
+    Console.WriteLine("Room\t Bed Configurations\t DailyRate\t Availability ");
+    foreach(Room room in roomList)
+    {
+        if (room.IsAvail)
+        {
+            Console.WriteLine(room.ToString());
+        } else { continue; }
+    }
+}
+
 // Main Program
 InitStay();
 InitRoom();
 InitGuest();
 
+// Basic Feautres:
+// Part 2)
+AvailRooms(roomList);
+
+void DisplayGuests()
+{
+
+}
+
+
+void DisplayAvailableRooms()
+{
+
+}
+
+
+void RegisterGuest()
+{
+
+}
