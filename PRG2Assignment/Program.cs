@@ -4,6 +4,7 @@
 List<Guest> guestList = new List<Guest>();
 List<Room> roomList = new List<Room>();
 List<int> roomsBooked = new List<int>();
+List<int> roomsUnavailbleRooms = new List<int>();
 
 // used to check each person's stay history
 IDictionary<string, Stay> stayDict = new Dictionary<string, Stay>();
@@ -12,7 +13,7 @@ IDictionary<string, bool> ischeckedInDict = new Dictionary<string, bool>();
 // used to check the amount of room booked by each person
 IDictionary<string, List<int>> roomsBookedDict = new Dictionary<string, List<int>>();
 // used to check the availability of the room in Stays.csv
-IDictionary<int, bool> roomsAvailDict = new Dictionary<int, bool>();
+//IDictionary<int, bool> roomsAvailDict = new Dictionary<int, bool>();
 // used to check the addons for each room
 IDictionary<int, List<bool>> roomAddonsDict = new Dictionary<int, List<bool>>();
 
@@ -77,15 +78,20 @@ void InitStay()
 
                 if (int.TryParse(currentRow[i], out roomNo))
                 {
-                    roomsBooked.Add(roomNo);
-                    roomsAvailDict.Add(roomNo, !ischeckedIn);
 
-                    for (int j = 1; i <= 3; j++)
+                    if(ischeckedIn != false)
                     {
-                        addons.Add(bool.Parse(currentRow[i + j]));
-                    }
+                        roomsBooked.Add(roomNo);
+                        roomsUnavailbleRooms.Add(roomNo);
+                        //roomsAvailDict.Add(roomNo, !ischeckedIn);
 
-                    roomAddonsDict.Add(roomNo, addons);
+                        for (int j = 1; i <= 3; j++)
+                        {
+                            addons.Add(bool.Parse(currentRow[i + j]));
+                        }
+
+                        roomAddonsDict.Add(roomNo, addons);
+                    }
 
                 }
                 else { continue; }
@@ -114,9 +120,16 @@ void InitRoom()
             string bedConfig = record[2];
             double dailyRate = Convert.ToDouble(record[3]);
             bool isAvail = true;
+            
 
-            // obtain the availbility of the room
-            isAvail = roomsAvailDict[roomNumber];
+            // goes thru the list of unavil rooms 
+            foreach(int unavailRoom in roomsUnavailbleRooms)
+            {
+                if(unavailRoom == roomNumber)
+                {
+                    isAvail = false;
+                }
+            }
 
             switch (record[0].ToUpper())
             {
@@ -124,7 +137,7 @@ void InitRoom()
                     Room stdRoom = new StandardRoom(roomNumber, bedConfig, dailyRate, isAvail);
                     roomList.Add(stdRoom);
                     break;
-                case "DELUX":
+                case "DELUXE":
                     Room dlxRoom = new DeluxeRoom(roomNumber, bedConfig, dailyRate, isAvail);
                     roomList.Add(dlxRoom);
                     break;
