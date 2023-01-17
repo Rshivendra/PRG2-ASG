@@ -1,5 +1,7 @@
 ﻿using PRG2Assignment;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 
 // global data lists/hashsets
 List<Guest> guestList = new List<Guest>();
@@ -18,6 +20,7 @@ IDictionary<string, HashSet<int>> roomsBookedDict = new Dictionary<string, HashS
 IDictionary<int, List<bool>> roomAddonsDict = new Dictionary<int, List<bool>>();
 // used to check the unavailability of the room in Stays.csv
 IDictionary<int, bool> roomsNotAvailDict = new Dictionary<int, bool>();
+
 
 // unused lists - do not delete until further notice -
 //List<int> roomsBooked = new List<int>();
@@ -148,7 +151,7 @@ void InitRoom()
     }
 }
 
-void AvailRooms(List<Room> roomList)
+void DisplayAvailRooms(List<Room> roomList)
 {
     Console.WriteLine("-------------------------------------------------------------");
     Console.WriteLine("\t\t\tAvailable Rooms");
@@ -164,6 +167,21 @@ void AvailRooms(List<Room> roomList)
     }
 }
 
+Room SearchAvailRoom(int roomNum, List<Room> roomList)
+{
+    foreach (Room room in roomList)
+    {
+        if (roomNum == room.RoomNumber)
+        {
+            if (!room.IsAvail){continue;}
+            else{return room;}
+        }
+        else { continue; }
+    }
+
+    return null;
+}
+
 void DisplayGuests(List<Guest> guestList)
 {
     Console.WriteLine("-------------------------------------------------------------");
@@ -177,9 +195,245 @@ void DisplayGuests(List<Guest> guestList)
     }
 }
 
+Guest retrieveGuest(string passportNum)
+{
+    foreach(Guest guest in guestList)
+    {
+        if (passportNum.Equals(guest.PassportNum))
+        {
+            return guest;
+        }
+    }
+
+    return null;
+}
+
 void RegisterGuest()
 {
 
+}
+
+void CheckInGuest()
+{
+
+    List<string> listforMenu = new List<string>()
+    {
+        "Standard Room",
+        "Delux Room"
+    };
+    string[] validWifiInputs = { "Y", "N" };
+
+    Guest guest;
+    Room room;
+    bool selectAnotherRoom = true;
+
+    DisplayGuests(guestList);
+    Console.WriteLine();
+    Console.WriteLine("CHECK IN SYSTEM");
+    Console.WriteLine("---------------");
+
+    do
+    {
+        Console.Write("Please Enter Guest's Passport Number to check in: ");
+        string passportNum = Console.ReadLine().ToUpper();
+        guest = retrieveGuest(passportNum);
+        if (guest == null) { Console.WriteLine("Guest not found!"); }
+
+    } while (guest == null);
+    
+    // retrieving previous rooms booked if any
+    roomsBooked = roomsBookedDict[guest.PassportNum];
+
+    Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
+    DateTime checkinDate = exactDate();
+    Console.Write("Enter Checkout Date (dd/MM/yyyy): ");
+    DateTime checkoutDate = exactDate();
+    Console.WriteLine();
+    Stay stay = new Stay(checkinDate, checkoutDate);
+    while (selectAnotherRoom)
+    {
+        DisplayAvailRooms(roomList);
+
+        do
+        {
+            Console.Write("Select an Available Room:");
+            room = SearchAvailRoom(IntChecker(), roomList);
+            if (room == null) { Console.WriteLine("Room not found!"); }
+        } while (room == null);
+
+        Console.WriteLine();
+        int optionSelect = optionChecker();
+        Console.WriteLine();
+
+        // STILL WORKING OUT THE OPTIONS PART OF THE PROGRAM
+        switch (optionSelect-1)
+        {
+
+            case 0:
+                Console.WriteLine("Standard Room Selected!");
+                Console.WriteLine();
+                StandardRoom stdRoom = (StandardRoom)room;
+
+                Console.Write("Would you require Wifi? [Y/N]: ");
+                string wifi = Console.ReadLine();
+                while (!ValidateInput(wifi))
+                {
+                    Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                    Console.Write("Would you require Wifi? [Y/N]: ");
+                    wifi = Console.ReadLine();
+                }
+
+                Console.Write("Would you require Breakfast? [Y/N]: ");
+                string breakfast = Console.ReadLine();
+                while (!ValidateInput(breakfast))
+                {
+                    Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                    Console.Write("Would you require Breakfast? [Y/N]: ");
+                    breakfast = Console.ReadLine();
+                }
+
+                // assigns True or False accordingly, and StringComparison.OrdinalIgnoreCase makes it so that it is case-sensitive
+                stdRoom.RequireWifi = wifi.Equals("Y", StringComparison.OrdinalIgnoreCase);
+                stdRoom.RequireBreakfast = breakfast.Equals("Y", StringComparison.OrdinalIgnoreCase);
+
+                // updating the availability
+                stdRoom.IsAvail = !stdRoom.IsAvail;
+
+                break;
+
+            case 1:
+                Console.WriteLine("Deluxe Room Selected!");
+                Console.WriteLine();
+                DeluxeRoom dlxRoom = (DeluxeRoom)room;
+
+                Console.Write("Would you require Additional Bed? [Y/N]: ");
+                string bed = Console.ReadLine();
+                while (!ValidateInput(bed))
+                {
+                    Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                    Console.Write("Would you require Additional Bed? [Y/N]: ");
+                    wifi = Console.ReadLine();
+                }
+
+                dlxRoom.AdditionalBed = bed.Equals("Y", StringComparison.OrdinalIgnoreCase);
+                break;
+
+            default:
+                Console.WriteLine("An error has occured");
+                break;
+        }
+        // adding the new room to the roomsbooked
+        roomsBooked.Add(room.RoomNumber);
+
+        Console.Write("Do you want to select another room? [Y/N]: ");
+        string anotherRoomChoice = Console.ReadLine();
+        if (anotherRoomChoice.Equals("N", StringComparison.OrdinalIgnoreCase))
+        {
+            selectAnotherRoom = false;
+            // updating on user's rooms
+            if (roomsBookedDict.TryGetValue(guest.PassportNum, out HashSet<int> existingRoomsBooked))
+            {
+                existingRoomsBooked.UnionWith(roomsBooked);
+            }
+            else
+            {
+                roomsBookedDict.Add(guest.PassportNum, roomsBooked);
+            }
+
+        }
+
+
+    }
+
+    // updating the Stay of the guest
+    guest.HotelStay = stay;
+
+    // updating on guest's checkedIn status
+    guest.IsCheckedIn = true;
+    Console.WriteLine();
+    Console.WriteLine($"{guest.Name} has been CheckedIn: {guest.IsCheckedIn}");
+
+    // clear the values in the roomsBooked list
+    roomsBooked.Clear();
+
+    // methods for this method
+    DateTime exactDate()
+    {
+        string format = "dd/MM/yyyy";
+
+        DateTime formatteddate;
+
+        while (!DateTime.TryParseExact(Console.ReadLine(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out formatteddate))
+        {
+            Console.WriteLine("Input is not a valid date");
+            Console.WriteLine("Please follow the exact format listed below!");
+            Console.WriteLine("dd/MM/yyyy");
+            Console.WriteLine("E.g, 15/11/2022");
+            Console.WriteLine();
+            Console.Write("Please Re-Enter a Valid Date");
+        }
+
+        return formatteddate;
+    }
+
+    void typesOfRoomTypes(List<string> listforMenu)
+    {
+        Console.WriteLine("------------- MENU -------------");
+
+        for (int i = 0; i < listforMenu.Count; i++)
+        {
+            Console.WriteLine($"[{i + 1}] {listforMenu[i]}");
+        }
+
+        Console.WriteLine("--------------------------------");
+    }
+
+    int optionChecker()
+    {
+        int optionNum = 0;
+
+        do
+        {
+            typesOfRoomTypes(listforMenu);
+            Console.Write("Please select the type of room from the options above: ");
+            optionNum = IntChecker();
+
+            return optionNum;
+
+        } while (optionNum > listforMenu.Count - 1);
+    }
+
+    bool ValidateInput(string input)
+    {
+        return input.ToUpper().Equals("Y", StringComparison.OrdinalIgnoreCase) || input.Equals("N", StringComparison.OrdinalIgnoreCase);
+    }
+
+}
+
+int IntChecker()
+{
+    int value;
+
+    do
+    {
+        while (!int.TryParse(Console.ReadLine(), out value))
+        {
+            ErrorMsg();
+        }
+
+        if (value <= 0) { Console.WriteLine("Nunber must be postive, and > 0"); Console.Write("Please re-enter input value: "); }
+
+    } while (value <= 0);
+
+    return (value);
+
+    void ErrorMsg()
+    {
+        Console.WriteLine("--------------------------------------------------");
+        Console.WriteLine($"| Must be of a numeric value! Please try again. |");
+        Console.WriteLine("--------------------------------------------------");
+        Console.Write("Please re-enter input value: ");
+    }
 }
 
 // Main Program
@@ -189,10 +443,14 @@ InitGuest();
 
 // Basic Feautres:
 
-// Part 1)
-DisplayGuests(guestList);
+// Part 1) Done
+//DisplayGuests(guestList);
 
-// Part 2)
-AvailRooms(roomList);
+// Part 2) Done
+//DisplayAvailRooms(roomList);
 
+// Part 3) Havent Done
+//RegisterGuest();
 
+// Part 4) IN PROGRESS
+CheckInGuest();
