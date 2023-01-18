@@ -253,10 +253,10 @@ void CheckInGuest()
     while (selectAnotherRoom)
     {
         DisplayAvailRooms(roomList);
-
+        Console.WriteLine();
         do
         {
-            Console.Write("Select an Available Room:");
+            Console.Write("Select an Available Room: ");
             room = SearchAvailRoom(IntChecker(), roomList);
             if (room == null) { Console.WriteLine("Room not found!"); }
         } while (room == null);
@@ -264,6 +264,11 @@ void CheckInGuest()
         Console.WriteLine();
         int optionSelect = optionChecker();
         Console.WriteLine();
+
+
+        // updating the availability
+        room.IsAvail = false;
+
 
         // STILL WORKING OUT THE OPTIONS PART OF THE PROGRAM
         switch (optionSelect-1)
@@ -296,9 +301,6 @@ void CheckInGuest()
                 stdRoom.RequireWifi = wifi.Equals("Y", StringComparison.OrdinalIgnoreCase);
                 stdRoom.RequireBreakfast = breakfast.Equals("Y", StringComparison.OrdinalIgnoreCase);
 
-                // updating the availability
-                stdRoom.IsAvail = !stdRoom.IsAvail;
-
                 break;
 
             case 1:
@@ -316,6 +318,7 @@ void CheckInGuest()
                 }
 
                 dlxRoom.AdditionalBed = bed.Equals("Y", StringComparison.OrdinalIgnoreCase);
+
                 break;
 
             default:
@@ -365,12 +368,13 @@ void CheckInGuest()
 
         while (!DateTime.TryParseExact(Console.ReadLine(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out formatteddate))
         {
+            Console.WriteLine();
             Console.WriteLine("Input is not a valid date");
             Console.WriteLine("Please follow the exact format listed below!");
             Console.WriteLine("dd/MM/yyyy");
             Console.WriteLine("E.g, 15/11/2022");
             Console.WriteLine();
-            Console.Write("Please Re-Enter a Valid Date");
+            Console.Write("Please Re-Enter a Valid Date: ");
         }
 
         return formatteddate;
@@ -398,9 +402,11 @@ void CheckInGuest()
             Console.Write("Please select the type of room from the options above: ");
             optionNum = IntChecker();
 
-            return optionNum;
+            if (optionNum > listforMenu.Count || optionNum == 0) { Console.WriteLine("Please Input a valid option as listed above!"); }
 
-        } while (optionNum > listforMenu.Count - 1);
+        } while (optionNum > listforMenu.Count || optionNum == 0);
+
+        return optionNum;
     }
 
     bool ValidateInput(string input)
@@ -421,9 +427,9 @@ int IntChecker()
             ErrorMsg();
         }
 
-        if (value <= 0) { Console.WriteLine("Nunber must be postive, and > 0"); Console.Write("Please re-enter input value: "); }
+        if (value < 0) { Console.WriteLine("Nunber must be postive, and > 0"); Console.Write("Please re-enter input value: "); }
 
-    } while (value <= 0);
+    } while (value < 0);
 
     return (value);
 
@@ -436,10 +442,109 @@ int IntChecker()
     }
 }
 
+void menuShow()
+{
+    List<string> listforMenu = new List<string>()
+    {
+        "List All Guests",
+        "List All Available Rooms",
+        "Register Guest",
+        "Check-in Guest",
+        "Display stay details of a guest",
+        "Extends the stay by numbers of day",
+        "Exit"
+    };
+
+    Console.WriteLine("------------- MENU -------------");
+
+    for (int i = 0; i < listforMenu.Count; i++)
+    {
+        if (listforMenu[i].ToUpper().Equals("EXIT"))
+        {
+            Console.WriteLine($"[{i * 0}] {listforMenu[i]}");
+        }
+        else
+        {
+            Console.WriteLine($"[{i + 1}] {listforMenu[i]}");
+        }
+    }
+
+    Console.WriteLine("--------------------------------");
+
+}
+
+void menuSelection(int numb)
+{
+    switch (numb)
+    {
+        case 1:
+            DisplayGuests(guestList);
+            standardClearingConsole();
+            break;
+        case 2:
+            DisplayAvailRooms(roomList);
+            standardClearingConsole();
+            break;
+        case 3:
+            Console.WriteLine("Not done yet");
+            standardClearingConsole();
+            break;
+        case 4:
+            CheckInGuest();
+            standardClearingConsole();
+            break;
+        case 5:
+            Console.WriteLine("Not done yet");
+            standardClearingConsole();
+            break;
+        case 6:
+            Console.WriteLine("Not done yet");
+            standardClearingConsole();
+            break;
+        case 0:
+            Console.WriteLine("Bye");
+            break;
+        default:
+            Console.WriteLine("Please input a number from the options shown!");
+            standardClearingConsole();
+            break;
+
+    }
+
+    void standardClearingConsole()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Press any key to continue..");
+        Console.ReadKey();
+        Console.Clear();
+    }
+
+}
+
 // Main Program
 InitStay();
 InitRoom();
 InitGuest();
+
+int numbr;
+
+try
+{
+    do
+    {
+        menuShow();
+        Console.Write("Enter your option : ");
+        numbr = IntChecker();
+        menuSelection(numbr);
+    } while (numbr != 0);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+
+Console.WriteLine("Press any Key to exit....");
+Console.ReadKey();
 
 // Basic Feautres:
 
@@ -453,4 +558,4 @@ InitGuest();
 //RegisterGuest();
 
 // Part 4) IN PROGRESS
-CheckInGuest();
+
