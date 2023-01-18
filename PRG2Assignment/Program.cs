@@ -400,7 +400,6 @@ void CheckInGuest()
 void ExtendStay()
 {
     Guest guest;
-
     DisplayGuests(guestList);
     Console.WriteLine();
     Console.WriteLine("EXTEND STAY SYSTEM");
