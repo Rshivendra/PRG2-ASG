@@ -12,6 +12,7 @@ namespace PRG2Assignment
         public bool RequireWifi { get; set; }
         public bool RequireBreakfast { get; set; }
 
+
         // Constructors for StandardRoom Class
         public StandardRoom() : base() { }
         public StandardRoom(int roomNo, string bedConfig, double dailyRate, bool isAvail) : base(roomNo, bedConfig, dailyRate, isAvail) { }

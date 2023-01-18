@@ -216,16 +216,10 @@ void RegisterGuest()
 void CheckInGuest()
 {
 
-    List<string> listforMenu = new List<string>()
-    {
-        "Standard Room",
-        "Delux Room"
-    };
-    string[] validWifiInputs = { "Y", "N" };
-
     Guest guest;
     Room room;
     bool selectAnotherRoom = true;
+    string roomType;
 
     DisplayGuests(guestList);
     Console.WriteLine();
@@ -261,20 +255,13 @@ void CheckInGuest()
             if (room == null) { Console.WriteLine("Room not found!"); }
         } while (room == null);
 
-        Console.WriteLine();
-        int optionSelect = optionChecker();
-        Console.WriteLine();
-
-
         // updating the availability
         room.IsAvail = false;
 
-
-        // STILL WORKING OUT THE OPTIONS PART OF THE PROGRAM
-        switch (optionSelect-1)
+        switch (room)
         {
 
-            case 0:
+            case StandardRoom:
                 Console.WriteLine("Standard Room Selected!");
                 Console.WriteLine();
                 StandardRoom stdRoom = (StandardRoom)room;
@@ -303,7 +290,7 @@ void CheckInGuest()
 
                 break;
 
-            case 1:
+            case DeluxeRoom:
                 Console.WriteLine("Deluxe Room Selected!");
                 Console.WriteLine();
                 DeluxeRoom dlxRoom = (DeluxeRoom)room;
@@ -378,35 +365,6 @@ void CheckInGuest()
         }
 
         return formatteddate;
-    }
-
-    void typesOfRoomTypes(List<string> listforMenu)
-    {
-        Console.WriteLine("------------- MENU -------------");
-
-        for (int i = 0; i < listforMenu.Count; i++)
-        {
-            Console.WriteLine($"[{i + 1}] {listforMenu[i]}");
-        }
-
-        Console.WriteLine("--------------------------------");
-    }
-
-    int optionChecker()
-    {
-        int optionNum = 0;
-
-        do
-        {
-            typesOfRoomTypes(listforMenu);
-            Console.Write("Please select the type of room from the options above: ");
-            optionNum = IntChecker();
-
-            if (optionNum > listforMenu.Count || optionNum == 0) { Console.WriteLine("Please Input a valid option as listed above!"); }
-
-        } while (optionNum > listforMenu.Count || optionNum == 0);
-
-        return optionNum;
     }
 
     bool ValidateInput(string input)
