@@ -215,6 +215,8 @@ void CheckInGuest()
     Room room;
     bool selectAnotherRoom = true;
     string roomType;
+    DateTime checkinDate;
+    DateTime checkoutDate;
 
     DisplayGuests(guestList);
     Console.WriteLine();
@@ -226,17 +228,30 @@ void CheckInGuest()
         Console.Write("Please Enter Guest's Passport Number to check in: ");
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
-        if (guest == null) { Console.WriteLine("Guest not found!"); }
+        if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
+        else if (guest.IsCheckedIn != false) { Console.WriteLine("Please select a guest that is not checked in!"); }
 
-    } while (guest == null);
+    } while (guest == null || guest.IsCheckedIn != false);
     
     // retrieving previous rooms booked if any
     roomsBooked = roomsBookedDict[guest.PassportNum];
 
     Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
-    DateTime checkinDate = exactDate();
-    Console.Write("Enter Checkout Date (dd/MM/yyyy): ");
-    DateTime checkoutDate = exactDate();
+    checkinDate = exactDate();
+
+    do
+    {
+        Console.Write("Enter Checkout Date (dd/MM/yyyy): ");
+        checkoutDate = exactDate();
+        if (checkoutDate.Subtract(checkinDate).Days < 0) 
+        { 
+            Console.WriteLine($"Checkout date is behind the checkin date!");
+            Console.WriteLine("Re-enter the checkout date!");
+            Console.WriteLine();
+        }
+
+    } while (checkoutDate.Subtract(checkinDate).Days < 0);
+
     Console.WriteLine();
     Stay stay = new Stay(checkinDate, checkoutDate);
     while (selectAnotherRoom)
@@ -257,7 +272,10 @@ void CheckInGuest()
         {
 
             case StandardRoom:
+                Console.WriteLine();
+                Console.WriteLine("-----------------------");
                 Console.WriteLine("Standard Room Selected!");
+                Console.WriteLine("-----------------------");
                 Console.WriteLine();
                 StandardRoom stdRoom = (StandardRoom)room;
 
@@ -286,7 +304,10 @@ void CheckInGuest()
                 break;
 
             case DeluxeRoom:
+                Console.WriteLine();
+                Console.WriteLine("---------------------");
                 Console.WriteLine("Deluxe Room Selected!");
+                Console.WriteLine("---------------------");
                 Console.WriteLine();
                 DeluxeRoom dlxRoom = (DeluxeRoom)room;
 
@@ -296,7 +317,7 @@ void CheckInGuest()
                 {
                     Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
                     Console.Write("Would you require Additional Bed? [Y/N]: ");
-                    wifi = Console.ReadLine();
+                    bed = Console.ReadLine();
                 }
 
                 dlxRoom.AdditionalBed = bed.Equals("Y", StringComparison.OrdinalIgnoreCase);
@@ -312,6 +333,13 @@ void CheckInGuest()
 
         Console.Write("Do you want to select another room? [Y/N]: ");
         string anotherRoomChoice = Console.ReadLine();
+        while (!ValidateInput(anotherRoomChoice))
+        {
+            Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+            Console.Write("Do you want to select another room? [Y/N]: ");
+            anotherRoomChoice = Console.ReadLine();
+        }
+
         if (anotherRoomChoice.Equals("N", StringComparison.OrdinalIgnoreCase))
         {
             selectAnotherRoom = false;
@@ -383,7 +411,7 @@ void ExtendStay()
         Console.Write("Please Enter Guest's Passport Number to check in: ");
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
-        if (guest == null) { Console.WriteLine("Guest not found!"); }
+        if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
         else if (guest.IsCheckedIn == false) { Console.WriteLine("Guest is not checked in"); }
 
     } while (guest == null || guest.IsCheckedIn == false);
