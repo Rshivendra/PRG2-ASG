@@ -369,11 +369,6 @@ void CheckInGuest()
 
 }
 
-void RegisterGuest()
-{
-
-}
-
 void ExtendStay()
 {
     Guest guest;
@@ -409,6 +404,16 @@ void ExtendStay()
     Console.WriteLine($"New Checkout Date: {guest.HotelStay.CheckoutDate}");
     Console.WriteLine("------------------------------------------------------");
     Console.WriteLine();
+}
+
+void RegisterGuest()
+{
+
+}
+
+void DisplayDetailsGuest()
+{
+
 }
 
 int IntChecker()
@@ -556,6 +561,8 @@ Console.ReadKey();
 // CheckInGuest();
 
 // Part 5) Havent Done
+// DisplayDetailsGuest()
 
 // Part 6) Done
+// ExtendStay();
 
