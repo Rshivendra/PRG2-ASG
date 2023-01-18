@@ -208,11 +208,6 @@ Guest retrieveGuest(string passportNum)
     return null;
 }
 
-void RegisterGuest()
-{
-
-}
-
 void CheckInGuest()
 {
 
@@ -374,6 +369,48 @@ void CheckInGuest()
 
 }
 
+void RegisterGuest()
+{
+
+}
+
+void ExtendStay()
+{
+    Guest guest;
+
+    DisplayGuests(guestList);
+    Console.WriteLine();
+    Console.WriteLine("EXTEND STAY SYSTEM");
+    Console.WriteLine("---------------");
+
+    do
+    {
+        Console.Write("Please Enter Guest's Passport Number to check in: ");
+        string passportNum = Console.ReadLine().ToUpper();
+        guest = retrieveGuest(passportNum);
+        if (guest == null) { Console.WriteLine("Guest not found!"); }
+        else if (guest.IsCheckedIn == false) { Console.WriteLine("Guest is not checked in"); }
+
+    } while (guest == null || guest.IsCheckedIn == false);
+
+    Console.WriteLine("------------------------------------------------------");
+    Console.WriteLine($"Current Checkout Date: {guest.HotelStay.CheckoutDate}");
+    Console.WriteLine("------------------------------------------------------");
+    Console.WriteLine();
+    Console.Write("Please enter the number of days to extend: ");
+    int noOfDays = IntChecker();
+
+    DateTime newCheckoutDate = guest.HotelStay.CheckoutDate.AddDays(noOfDays);
+    guest.HotelStay.CheckoutDate = newCheckoutDate;
+
+    Console.WriteLine($"{guest.Name}'s stay has been extended.");
+    Console.WriteLine();
+    Console.WriteLine("------------------------------------------------------");
+    Console.WriteLine($"New Checkout Date: {guest.HotelStay.CheckoutDate}");
+    Console.WriteLine("------------------------------------------------------");
+    Console.WriteLine();
+}
+
 int IntChecker()
 {
     int value;
@@ -456,7 +493,7 @@ void menuSelection(int numb)
             standardClearingConsole();
             break;
         case 6:
-            Console.WriteLine("Not done yet");
+            ExtendStay();
             standardClearingConsole();
             break;
         case 0:
@@ -515,5 +552,10 @@ Console.ReadKey();
 // Part 3) Havent Done
 //RegisterGuest();
 
-// Part 4) IN PROGRESS
+// Part 4) Done
+// CheckInGuest();
+
+// Part 5) Havent Done
+
+// Part 6) Done
 
