@@ -30,7 +30,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return base.ToString() + $"{CalculateCharges():2C,-10}";
+            return base.ToString();
         }
     }
 }

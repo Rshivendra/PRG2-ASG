@@ -41,9 +41,7 @@ void InitGuest()
             Membership membership = new Membership(currentRow[2], int.Parse(currentRow[3]));
             Stay stay = stayDict[passPortNo];
             Guest guest = new Guest(currentRow[0], passPortNo, stay,membership, ischeckedInDict[passPortNo]);
-
             guestList.Add(guest);
-
         }
     }
 }
@@ -72,18 +70,16 @@ void InitStay()
 
                 if (int.TryParse(currentRow[i], out roomNo))
                 {
+                    for (int j = 1; j <= 3 && i + j < currentRow.Length; j++)
+                    {
+                        addons.Add(bool.Parse(currentRow[i + j]));
+                    }
+                    roomAddonsDict.TryAdd(roomNo, addons);
 
                     if (ischeckedIn == true)
                     {
                         roomsBooked.Add(roomNo);
                         roomsNotAvailDict.TryAdd(roomNo, ischeckedIn);
-
-                        for (int j = 1; j <= 3 && i + j < currentRow.Length; j++)
-                        {
-                            addons.Add(bool.Parse(currentRow[i + j]));
-                        }
-
-                        roomAddonsDict.TryAdd(roomNo, addons);
                     }
 
                 }
@@ -99,7 +95,6 @@ void InitStay()
     }
 }
 
-
 void InitRoom()
 {
     using (StreamReader sr = new StreamReader("Rooms.csv"))
@@ -110,6 +105,9 @@ void InitRoom()
         {
             string[] record = s.Split(',');
             bool isAvail;
+            bool requireWifi = false;
+            bool requireBreakfast = false;
+            bool additionalBed = false;
             int roomNo = Convert.ToInt32(record[1]);
             string bedConfig = record[2];
             double dailyRate = Convert.ToDouble(record[3]);
@@ -125,6 +123,13 @@ void InitRoom()
                 isAvail = true;
             }
 
+            if (roomAddonsDict.ContainsKey(roomNo))
+            {
+                requireWifi = (roomAddonsDict[roomNo])[0];
+                requireBreakfast = (roomAddonsDict[roomNo])[1];
+                additionalBed = (roomAddonsDict[roomNo])[2];
+            }
+
             // run this code to check the availbility of all the rooms
             // press enter to continue
             /*
@@ -137,10 +142,15 @@ void InitRoom()
                 case "STANDARD":
                     Room stdRoom = new StandardRoom(roomNo, bedConfig, dailyRate, isAvail);
                     roomList.Add(stdRoom);
+                    StandardRoom std = (StandardRoom)stdRoom;
+                    std.RequireWifi = requireWifi;
+                    std.RequireBreakfast = requireBreakfast;
                     break;
                 case "DELUXE":
                     Room dlxRoom = new DeluxeRoom(roomNo, bedConfig, dailyRate, isAvail);
                     roomList.Add(dlxRoom);
+                    DeluxeRoom dlx = (DeluxeRoom)dlxRoom;
+                    dlx.AdditionalBed = additionalBed;
                     break;
                 default:
                     Console.WriteLine("An error occured when searching for the rooms!");
@@ -549,6 +559,7 @@ void menuSelection(int numb)
 }
 
 // Main Program
+
 InitStay();
 InitRoom();
 InitGuest();
