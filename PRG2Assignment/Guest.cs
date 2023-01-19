@@ -18,13 +18,13 @@ namespace PRG2Assignment
         // Constructors for Guest Class
         public Guest() { }
 
-        public Guest(string? name, string? passportNum, Stay? hotelStay, Membership? member, bool? isCheckedIn)
+        public Guest(string? name, string? passportNum, Stay? hotelStay, Membership? member)
         {
             this.Name = name;
             this.PassportNum = passportNum;
             this.HotelStay = hotelStay;
             this.Member = member;
-            this.IsCheckedIn = isCheckedIn;
+            this.IsCheckedIn = false;
         }
 
         // Methods for Guest Class

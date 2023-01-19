@@ -36,12 +36,22 @@ void InitGuest()
         {
             string[]? currentRow = rowReader.Split(",");
 
-            string passPortNo = currentRow[1];
+            string passportNo = currentRow[1];
 
             Membership membership = new Membership(currentRow[2], int.Parse(currentRow[3]));
-            Stay stay = stayDict[passPortNo];
-            Guest guest = new Guest(currentRow[0], passPortNo, stay,membership, ischeckedInDict[passPortNo]);
-            guestList.Add(guest);
+            
+            if (stayDict.ContainsKey(passportNo) == true)
+            {
+                Stay stay = stayDict[passportNo];
+                Guest guest = new Guest(currentRow[0], passportNo, stay, membership);
+                guest.IsCheckedIn = ischeckedInDict[passportNo];
+                guestList.Add(guest);
+            }
+            else
+            {
+                Guest guest = new Guest(currentRow[0], passportNo, null, membership);
+                guestList.Add(guest);
+            }
         }
     }
 }
@@ -55,12 +65,12 @@ void InitStay()
         {
             string[]? currentRow = rowReader.Split(",");
 
-            string passPortNo = currentRow[1];
+            string passportNo = currentRow[1];
 
             bool ischeckedIn = bool.Parse(currentRow[2]);
             Stay currentRowStay = new Stay(DateTime.Parse(currentRow[3]), DateTime.Parse(currentRow[4]));
-            stayDict.TryAdd(passPortNo, currentRowStay);
-            ischeckedInDict.TryAdd(passPortNo, ischeckedIn);
+            stayDict.TryAdd(passportNo, currentRowStay);
+            ischeckedInDict.TryAdd(passportNo, ischeckedIn);
 
             // run thru the row to check for the roomNos taken by each person and implement each add-on for each room
             for (int i = 0; i < currentRow.Length; i++)
@@ -81,12 +91,11 @@ void InitStay()
                         roomsBooked.Add(roomNo);
                         roomsNotAvailDict.TryAdd(roomNo, ischeckedIn);
                     }
-
                 }
                 else { continue; }
             }
 
-            roomsBookedDict.TryAdd(passPortNo, roomsBooked);
+            roomsBookedDict.TryAdd(passportNo, roomsBooked);
 
             // reset the roomsBooked List
             roomsBooked.Clear();
@@ -156,7 +165,6 @@ void InitRoom()
                     Console.WriteLine("An error occured when searching for the rooms!");
                     break;
             }
-
         }
     }
 }
@@ -201,7 +209,14 @@ void DisplayGuests(List<Guest> guestList)
     Console.WriteLine("Name\t PassPort\t Duration of Stay\t Membership Status\t CheckedIn Status");
     foreach (Guest guest in guestList)
     {
-        Console.WriteLine(guest.ToString());
+        if (stayDict.ContainsKey(guest.PassportNum) == false)
+        {
+            Console.WriteLine($"{guest.Name,-8} {guest.PassportNum,-15} {"0",-23} {guest.Member.Status,-23} {guest.IsCheckedIn,-10}");
+        }
+        else
+        {
+            Console.WriteLine(guest.ToString());
+        }
     }
 }
 
@@ -239,7 +254,7 @@ void CheckInGuest()
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
         if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
-        else if (guest.IsCheckedIn != false) { Console.WriteLine("Please select a guest that is not checked in!"); }
+        
 
     } while (guest == null || guest.IsCheckedIn != false);
     
@@ -445,13 +460,60 @@ void ExtendStay()
 
 void RegisterGuest()
 {
+    string name;
+    string passportNo;
 
+    Console.WriteLine("REGISTER GUESTS SYSTEM");
+    Console.WriteLine("----------------------\n");
+    
+    while (true)
+    {
+        try
+        {
+            Console.Write("Please Enter Guest's Name: ");
+            name = Console.ReadLine();
+            Console.Write("Please Enter Guest's Passport Number: ");
+            passportNo = Console.ReadLine();
+            break;
+        }
+        catch (FormatException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+  
+    Membership membership = new Membership("Ordinary",0);
+    Guest guest = new Guest(name,passportNo,null,membership);
+    guestList.Add(guest);
+
+    // appending guest info to Guests.csv file
+    string data = guest.Name + "," + guest.PassportNum + "," + guest.Member.Status + "," + guest.Member.Points;
+    using (StreamWriter sw = new StreamWriter("Guests.csv", true))
+    {
+        sw.WriteLine(data);
+    }
+
+    Console.WriteLine();
+    Console.WriteLine($"{guest.Name} has been Registered Successfully.");
 }
 
 void DisplayDetailsGuest()
 {
+    Guest guest;
+    DisplayGuests(guestList);
+
+    do
+    {
+        Console.Write("Please Enter Guest's Passport Number to check in: ");
+        string passportNum = Console.ReadLine().ToUpper();
+        guest = retrieveGuest(passportNum);
+        if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
+        else if (guest.IsCheckedIn != false) { Console.WriteLine("Please select a guest that is not checked in!"); }
+
+    } while (guest == null || guest.IsCheckedIn != false);
 
 }
+
 
 int IntChecker()
 {
@@ -523,7 +585,7 @@ void menuSelection(int numb)
             standardClearingConsole();
             break;
         case 3:
-            Console.WriteLine("Not done yet");
+            RegisterGuest();
             standardClearingConsole();
             break;
         case 4:
@@ -531,7 +593,7 @@ void menuSelection(int numb)
             standardClearingConsole();
             break;
         case 5:
-            Console.WriteLine("Not done yet");
+            DisplayDetailsGuest();
             standardClearingConsole();
             break;
         case 6:
