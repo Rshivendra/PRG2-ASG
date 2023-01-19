@@ -20,7 +20,8 @@ IDictionary<string, HashSet<int>> roomsBookedDict = new Dictionary<string, HashS
 IDictionary<int, List<bool>> roomAddonsDict = new Dictionary<int, List<bool>>();
 // used to check the unavailability of the room in Stays.csv
 IDictionary<int, bool> roomsNotAvailDict = new Dictionary<int, bool>();
-
+// all rooms from room.csv
+IDictionary<int, Room> allRoomsDict = new Dictionary<int, Room>();
 
 // unused lists - do not delete until further notice -
 //List<int> roomsBooked = new List<int>();
@@ -90,6 +91,7 @@ void InitStay()
                     {
                         roomsBooked.Add(roomNo);
                         roomsNotAvailDict.TryAdd(roomNo, ischeckedIn);
+                        currentRowStay.AddRoom(allRoomsDict[roomNo]);
                     }
                 }
                 else { continue; }
@@ -154,12 +156,15 @@ void InitRoom()
                     StandardRoom std = (StandardRoom)stdRoom;
                     std.RequireWifi = requireWifi;
                     std.RequireBreakfast = requireBreakfast;
+                    allRoomsDict.Add(std.RoomNumber,std);
+
                     break;
                 case "DELUXE":
                     Room dlxRoom = new DeluxeRoom(roomNo, bedConfig, dailyRate, isAvail);
                     roomList.Add(dlxRoom);
                     DeluxeRoom dlx = (DeluxeRoom)dlxRoom;
                     dlx.AdditionalBed = additionalBed;
+                    allRoomsDict.Add(dlx.RoomNumber, dlx);
                     break;
                 default:
                     Console.WriteLine("An error occured when searching for the rooms!");
@@ -428,7 +433,7 @@ void ExtendStay()
     DisplayGuests(guestList);
     Console.WriteLine();
     Console.WriteLine("EXTEND STAY SYSTEM");
-    Console.WriteLine("---------------");
+    Console.WriteLine("------------------");
 
     do
     {
@@ -500,20 +505,52 @@ void RegisterGuest()
 void DisplayDetailsGuest()
 {
     Guest guest;
+    Stay stay;
     DisplayGuests(guestList);
-
+    Console.WriteLine();
+    Console.WriteLine("DETAILS OF GUEST");
+    Console.WriteLine("----------------");
+    Console.WriteLine();
     do
     {
-        Console.Write("Please Enter Guest's Passport Number to check in: ");
+
+        Console.Write("Please Enter Guest's Passport Number: ");
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
         if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
-        else if (guest.IsCheckedIn != false) { Console.WriteLine("Please select a guest that is not checked in!"); }
+        else if (guest.IsCheckedIn == false) { Console.WriteLine("Please select a guest that is not checked in!"); }
 
-    } while (guest == null || guest.IsCheckedIn != false);
+    } while (guest == null || guest.IsCheckedIn == false);
+
+    stay = guest.HotelStay;
+    Console.WriteLine();
+    Console.WriteLine($"{guest.Name}'s Stay");
+    Console.WriteLine($"{RepeatStringForLoop("-", guest.Name.Length)}-------");
+    Console.WriteLine(stay.ToString());
+
+
+    Console.WriteLine();
+    Console.WriteLine($"{guest.Name}'s Rooms");
+    Console.WriteLine($"{RepeatStringForLoop("-",guest.Name.Length)}--------");
+
+    foreach(Room room in stay.RoomList)
+    {
+        Console.WriteLine($"{room.RoomNumber}");
+    }
 
 }
 
+string RepeatStringForLoop(string s, int n)
+{
+    var result = s;
+
+    for (var i = 0; i < n - 1; i++)
+    {
+        result += s;
+    }
+
+    return result;
+}
 
 int IntChecker()
 {
@@ -621,9 +658,8 @@ void menuSelection(int numb)
 }
 
 // Main Program
-
-InitStay();
 InitRoom();
+InitStay();
 InitGuest();
 
 int numbr;
