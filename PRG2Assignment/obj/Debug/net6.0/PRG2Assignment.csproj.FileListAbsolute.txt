@@ -66,3 +66,10 @@ C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.
 C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.dll
 C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\refint\PRG2Assignment.dll
 C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.pdb
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.exe
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.deps.json
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.runtimeconfig.json
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.dll
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\bin\Debug\net6.0\PRG2Assignment.pdb
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.genruntimeconfig.cache
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\ref\PRG2Assignment.dll
