@@ -91,7 +91,11 @@ void InitStay()
                     {
                         roomsBooked.Add(roomNo);
                         roomsNotAvailDict.TryAdd(roomNo, ischeckedIn);
-                        currentRowStay.AddRoom(if (allRoomsDict.ContainsKey(roomNo)) { allRoomsDict[roomNo] });
+
+                        if (allRoomsDict.ContainsKey(roomNo)) 
+                        {
+                            currentRowStay.AddRoom(allRoomsDict[roomNo]);
+                        }
                     }
                 }
                 else { continue; }

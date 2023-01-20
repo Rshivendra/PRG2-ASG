@@ -58,3 +58,11 @@ C:\Users\Rajmohan Shivendra\source\repos\PRG2Asg\PRG2Assignment\obj\Debug\net6.0
 C:\Users\Rajmohan Shivendra\source\repos\PRG2Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.pdb
 C:\Users\Rajmohan Shivendra\source\repos\PRG2Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.genruntimeconfig.cache
 C:\Users\Rajmohan Shivendra\source\repos\PRG2Asg\PRG2Assignment\obj\Debug\net6.0\ref\PRG2Assignment.dll
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.csproj.AssemblyReference.cache
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.AssemblyInfoInputs.cache
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.AssemblyInfo.cs
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.csproj.CoreCompileInputs.cache
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.dll
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\refint\PRG2Assignment.dll
+C:\Users\Rajmohan Shivendra\source\repos\PRG2_Asg\PRG2Assignment\obj\Debug\net6.0\PRG2Assignment.pdb
