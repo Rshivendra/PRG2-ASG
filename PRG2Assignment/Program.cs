@@ -41,7 +41,7 @@ void InitGuest()
 
             Membership membership = new Membership(currentRow[2], int.Parse(currentRow[3]));
             
-            if (stayDict.ContainsKey(passportNo) == true)
+            if (stayDict.ContainsKey(passportNo))
             {
                 Stay stay = stayDict[passportNo];
                 Guest guest = new Guest(currentRow[0], passportNo, stay, membership);
@@ -91,7 +91,7 @@ void InitStay()
                     {
                         roomsBooked.Add(roomNo);
                         roomsNotAvailDict.TryAdd(roomNo, ischeckedIn);
-                        currentRowStay.AddRoom(allRoomsDict[roomNo]);
+                        currentRowStay.AddRoom(if (allRoomsDict.ContainsKey(roomNo)) { allRoomsDict[roomNo] });
                     }
                 }
                 else { continue; }
