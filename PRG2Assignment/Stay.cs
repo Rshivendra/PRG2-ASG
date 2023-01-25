@@ -42,7 +42,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return $"CheckIn:\n{this.CheckinDate.Date,-10}\n\nCheckOut:\n{this.CheckoutDate.Date,-10}\n\nDuration of Stay:\n{CheckoutDate.Subtract(CheckinDate).Days} Days";
+            return $"\t[{this.CheckinDate.ToShortDateString(),-10} - {this.CheckoutDate.ToShortDateString(),-10}] \t {CheckoutDate.Subtract(CheckinDate).Days} Days";
         }
 
     }

@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using System.Text.RegularExpressions;
+
+// connections
+string staysConn = @"C:\Polytechnic_Year1\Polytechnic_sem_2\PRG_2\Assignment\Stays.csv";
+string guestsConn = @"Guests.csv";
+string roomsConn = @"Rooms.csv";
+string pattern = @"^[A-Z]\d{7}[A-Z]$";
 
 // dictionaries:
 IDictionary<string, Stay> stayDict = new Dictionary<string, Stay>();
@@ -25,7 +32,6 @@ List<int> UpdateRoomDictFromFile(string filepath, IDictionary<int, Room> roomDic
             string line = reader.ReadLine();
 
             string[] parts = line.Split(',');
-
             int roomNumber = int.Parse(parts[1]);
             string bedConfiguration = parts[2];
             double dailyRate = double.Parse(parts[3]);
@@ -60,10 +66,10 @@ List<int> UpdateRoomDictFromFile(string filepath, IDictionary<int, Room> roomDic
 }
 
 // this method is used to update the current Stay dict object
-List<int> UpdateStayDictFromFile(string filepath, IDictionary<string, Stay> stayDict)
+List<int> UpdateStayDictFromFile(string filepath, IDictionary<string, Stay> stayDict, DateTime? currentDate, Stay? rangeOfStay)
 {
 
-    List<int> roomNos = UpdateRoomDictFromFile("Rooms.csv", roomDict);
+    List<int> roomNos = UpdateRoomDictFromFile(roomsConn, roomDict);
     stayDict.Clear();
 
     using (StreamReader reader = new StreamReader(filepath))
@@ -77,7 +83,7 @@ List<int> UpdateStayDictFromFile(string filepath, IDictionary<string, Stay> stay
             string passportNum = parts[1];
             bool guestIsCheckedIn = bool.Parse(parts[2]);
             DateTime checkinDate = DateTime.Parse(parts[3]);
-            DateTime checkoutDate = DateTime.Parse(parts[4]);
+            DateTime checkoutDate = DateTime.Parse(parts[4]).Date;
 
             Stay stay = new Stay(checkinDate, checkoutDate);
 
@@ -88,12 +94,51 @@ List<int> UpdateStayDictFromFile(string filepath, IDictionary<string, Stay> stay
 
                 if (int.TryParse(parts[i], out roomNo))
                 {
-                    if (guestIsCheckedIn)
-                    {
-                        // set the room availability to false
-                        roomDict[roomNo].IsAvail = false;
-                    }
 
+                    // check if need to use current date or a range of dates
+                    switch (currentDate)
+                    {
+                        case null:
+                            switch (guestIsCheckedIn)
+                            {
+                                case false:
+                                    break;
+                                case true:
+                                    if (((rangeOfStay.CheckinDate.Date >= checkinDate && rangeOfStay.CheckinDate.Date <= checkoutDate) || (rangeOfStay.CheckoutDate.Date >= checkinDate && rangeOfStay.CheckoutDate.Date <= checkoutDate)) || (checkinDate >= rangeOfStay.CheckinDate.Date && checkoutDate <= rangeOfStay.CheckoutDate.Date))
+                                    {
+                                        //Console.WriteLine($"room number: {roomNo} {checkinDate} {checkoutDate} user checkin date: {rangeOfStay.CheckinDate.Date} occupied");
+                                        roomDict[roomNo].IsAvail = false;
+                                        //Console.ReadKey();
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
+                                    break;
+                                default:
+                                    Console.WriteLine("Error when using switch case for guestisCheckedIn at updateStayDict");
+                                    break;
+
+
+                            }
+                            break;
+
+                        // if guest is checkedIn and is not within the checkIn and checkOut date range
+                        case not null:
+
+                            if (guestIsCheckedIn && !((currentDate >= checkinDate) && (currentDate <= checkoutDate)))
+                            {
+                                // set the room availability to true
+                                roomDict[roomNo].IsAvail = true;
+                            }
+                            else if ((currentDate >= checkinDate) && (currentDate <= checkoutDate))
+                            {
+                                // else set the room availability to false
+                                roomDict[roomNo].IsAvail = false;
+                            }
+                            break;
+                    }
+                    
                     switch (roomDict[roomNo])
                     {
                         case StandardRoom:
@@ -118,7 +163,7 @@ List<int> UpdateStayDictFromFile(string filepath, IDictionary<string, Stay> stay
                 else { continue; }
             }
 
-            stayDict.Add(passportNum, stay);
+            stayDict.Add(passportNum+"-"+checkinDate.ToShortDateString()+"_"+checkoutDate.ToShortDateString(), stay);
         }
     }
 
@@ -131,7 +176,7 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
     List<Guest> guestList = new List<Guest>();
     if(todisplay.ToLower() == "yes")
     {
-        Console.WriteLine("Name\t PassPort\t Duration of Stay\t Membership Status\t CheckedIn Status");
+        Console.WriteLine("Name\t PassPort\t Membership Status\t Points\t\t Check-in Status");
     }
 
     using (StreamReader sr = new StreamReader(filepath))
@@ -139,9 +184,9 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
 
         sr.ReadLine();
 
-
         while (!sr.EndOfStream)
         {
+            int guestCounter = 0;
             string line = sr.ReadLine();
 
             string[] parts = line.Split(',');
@@ -151,64 +196,108 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
             string passportNum = parts[1];
             string status = parts[2];
             int points = int.Parse(parts[3]);
-            // by default assume its false
-            bool? checkedIn = guestCheckedInStatus(passportNum);
-
-            if (checkedIn == null) { Console.WriteLine($"Unable to track {name}'s passportNum {passportNum}"); }
-
-
+            bool? checkedInStatus = false;
             // Create a new Membership object
             Membership member = new Membership(status, points);
 
+            List<string> guestsStays = SearchForCheckInCheckOutDates(staysConn, passportNum);
+
             // Create a new Guest object
-            Guest guest = new Guest(name, passportNum, stayDict[passportNum], member);
-            guest.IsCheckedIn = checkedIn;
-
-            guestList.Add(guest);
-
-            // Display the information of the guest
-            if(todisplay.ToLower() == "yes")
+            foreach (string stayDuration in guestsStays)
             {
-                Console.WriteLine(guest.ToString());
+                string guestKey = passportNum + "-" + stayDuration;
+                checkedInStatus = searchForCheckedInStatus(staysConn, guestKey);
+
+                Guest guest = new Guest(name, passportNum, stayDict[passportNum+"-"+stayDuration], member);
+                guest.IsCheckedIn = checkedInStatus;
+                guestList.Add(guest);
+
+                // Display the information of the guest
+                if (todisplay.ToLower() == "yes" && guestCounter == 0)
+                {
+                    Console.WriteLine(guest.ToString());
+                }
+                guestCounter++;
             }
+
         }
     }
-
     return guestList;
-
 }
 
-bool? guestCheckedInStatus(string passPortNo)
+List<string> SearchForCheckInCheckOutDates(string filepath, string passPortNum)
 {
-    using (StreamReader sr = new StreamReader("Stays.csv"))
+
+    List<string> differentCheckOutPeriodForSameGuestList = new List<string>();
+
+    using (StreamReader reader = new StreamReader(filepath))
     {
-        sr.ReadLine();
+        reader.ReadLine();
 
-        while (!sr.EndOfStream)
+        while (!reader.EndOfStream)
         {
-
-            string line = sr.ReadLine();
+            string line = reader.ReadLine();
 
             string[] parts = line.Split(',');
 
+            if (parts[1].Equals(passPortNum))
+            {
+                differentCheckOutPeriodForSameGuestList.Add(parts[3] +"_"+ parts[4]);
+            }
 
-            if (parts[1].Equals(passPortNo))
+        }
+    }
+
+    return differentCheckOutPeriodForSameGuestList;
+
+}
+
+bool? searchForCheckedInStatus(string filepath, string guestKey)
+{
+    using (StreamReader reader = new StreamReader(filepath))
+    {
+        reader.ReadLine();
+
+        while (!reader.EndOfStream)
+        {
+            string line = reader.ReadLine();
+
+            string[] parts = line.Split(',');
+
+            string fileGuestKey = parts[1] + "-" + guestKey.Split("-")[1];
+
+            if (fileGuestKey.Equals(guestKey))
             {
                 return bool.Parse(parts[2]);
             }
-        }
 
+        }
     }
 
     return null;
 }
 
-void DisplayAvailRooms(IDictionary<int, Room> roomDict)
+
+void DisplayAvailRooms(IDictionary<int, Room> roomDict, Stay? rangeOfStay, DateTime dateToBeChecked)
 {
-    List<int> roomNoList = UpdateStayDictFromFile("Stays.csv", stayDict);
+    List<int> roomNoList = new List<int>();
+
+    // if statement to determine whether need to display rooms based on current date or in a range of dates
+    switch (rangeOfStay)
+    {
+        case null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, DateTime.Now, null);
+            break;
+        case not null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, null, rangeOfStay);
+            break;
+        default:
+            Console.WriteLine("An error has occured! at displaying Available Rooms");
+            break;
+    }
 
     Console.WriteLine("-------------------------------------------------------------");
-    Console.WriteLine("\t\t\tAvailable Rooms");
+    Console.WriteLine($"\tAvailable Rooms as of {dateToBeChecked.ToShortDateString()}");
     Console.WriteLine("-------------------------------------------------------------");
 
     Console.WriteLine("Room\t Bed Configurations\t DailyRate\t Availability ");
@@ -228,29 +317,54 @@ void DisplayAvailRooms(IDictionary<int, Room> roomDict)
 // NEEDS TESTING
 void RegisterGuest()
 {
+    List<Guest> guestList = DisplayAllGuests(guestsConn, stayDict, "no");
     string name;
     string passportNo;
+    bool? similarityBetweenPassports;
     Console.WriteLine();
     Console.WriteLine("REGISTER GUESTS SYSTEM");
     Console.WriteLine("----------------------\n");
 
     Console.Write("Please Enter Guest's Name: ");
     name = Console.ReadLine();
-    Console.Write("Please Enter Guest's Passport Number: ");
-    passportNo = Console.ReadLine();
+    // check if passport inputted is of correct format
+    do
+    {
+        Console.Write("Please Enter Guest's Passport Number: ");
+        passportNo = Console.ReadLine().ToUpper();
+        similarityBetweenPassports = similarPassportChecker(passportNo);
+        if (!Regex.IsMatch(passportNo, pattern)) { Console.WriteLine("Passport number is not valid"); }
+    } while (!Regex.IsMatch(passportNo, pattern) || similarityBetweenPassports == true);
+
 
     Membership membership = new Membership("Ordinary", 0);
     Guest guest = new Guest(name, passportNo, null, membership);
 
     // appending guest info to Guests.csv file
     string data = guest.Name + "," + guest.PassportNum + "," + guest.Member.Status + "," + guest.Member.Points;
-    using (StreamWriter sw = new StreamWriter("Guests.csv", true))
+    using (StreamWriter sw = new StreamWriter(guestsConn, true))
     {
         sw.WriteLine(data);
     }
 
     Console.WriteLine();
     Console.WriteLine($"{guest.Name} has been Registered Successfully.");
+
+    bool? similarPassportChecker(string userInputPassportNumber)
+    {
+        foreach(Guest guest in guestList)
+        {
+            if (guest.PassportNum.Equals(userInputPassportNumber))
+            {
+                Console.WriteLine($"Inputted passport number {userInputPassportNumber} already exists...");
+                return true;
+            }
+        }
+
+        return null;
+    }
+
+
 }
 
 void CheckInGuest()
@@ -263,7 +377,7 @@ void CheckInGuest()
     DateTime checkinDate;
     DateTime checkoutDate;
 
-    DisplayAllGuests("Guests.csv", stayDict);
+    DisplayAllGuests(guestsConn, stayDict);
 
     Console.WriteLine();
     Console.WriteLine("CHECK IN SYSTEM");
@@ -274,10 +388,9 @@ void CheckInGuest()
         Console.Write("Please Enter Guest's Passport Number to check in: ");
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
-        if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
-
-
-    } while (guest == null || guest.IsCheckedIn != false);
+        if (guest == null) { Console.WriteLine("Guest not found! Give a valid passport number!"); }
+        else if (guest.IsCheckedIn == true) { Console.WriteLine("Please select a guest that is not checkedin!"); }
+    } while (guest == null || guest.IsCheckedIn == true);
 
     Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
     checkinDate = exactDate();
@@ -299,12 +412,12 @@ void CheckInGuest()
     Stay stay = new Stay(checkinDate, checkoutDate);
     while (selectAnotherRoom)
     {
-        DisplayAvailRooms(roomDict);
+        DisplayAvailRooms(roomDict, stay,stay.CheckinDate);
         Console.WriteLine();
         do
         {
             Console.Write("Select an Available Room: ");
-            room = SearchAvailRoom(IntChecker(), roomDict);
+            room = SearchAvailRoom(IntChecker(), roomDict,stay);
             if (room == null) { Console.WriteLine("Room not found!"); }
         } while (room == null);
 
@@ -434,9 +547,9 @@ void CheckInGuest()
 
 void DisplayDetailsGuest()
 {
+    int counter = 0;
     Guest guest;
-    Stay stay;
-    DisplayAllGuests("Guests.csv",stayDict);
+    DisplayAllGuests(guestsConn,stayDict);
     Console.WriteLine();
     Console.WriteLine("DETAILS OF GUEST");
     Console.WriteLine("----------------");
@@ -448,33 +561,57 @@ void DisplayDetailsGuest()
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
         if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
-        else if (guest.IsCheckedIn == false) { Console.WriteLine("Please select a guest that is not checked in!"); }
 
-    } while (guest == null || guest.IsCheckedIn == false);
-
-    stay = guest.HotelStay;
-    Console.WriteLine();
-    Console.WriteLine($"{guest.Name}'s Stay");
-    Console.WriteLine($"{RepeatStringForLoop("-", guest.Name.Length)}-------");
-    Console.WriteLine(stay.ToString());
-
+    } while (guest == null);
 
     Console.WriteLine();
-    Console.WriteLine($"{guest.Name}'s Rooms");
-    Console.WriteLine($"{RepeatStringForLoop("-", guest.Name.Length)}--------");
+    Console.WriteLine($"{guest.Name}'s Details");
+    Console.WriteLine($"{RepeatStringForLoop("-", guest.Name.Length)}----------");
+    Console.WriteLine();
+    Console.WriteLine($"No\t Room\t\tStay Duration\t\t\t Number of Days");
 
-    foreach (Room room in stay.RoomList)
+    foreach (string key in stayDict.Keys)
     {
-        Console.WriteLine($"{room.RoomNumber}");
+        // key has passportNum-checkinDate_checkoutDate
+        // keyArray[0] means passportNum and keyArray[1] means checkinDate_checkoutDate
+        string[] keyArray = key.Split("-");
+
+        if (keyArray[0].Equals(guest.PassportNum))
+        {
+            displayRoomDetails(keyArray[1]);
+        }
+
+    }
+
+
+    void displayRoomDetails(string? stayDate)
+    {
+        
+        string[] stayDatesArray = stayDate.Split("_");
+        Stay stay = stayDict[guest.PassportNum + "-" + stayDatesArray[0] + "_" + stayDatesArray[1]];
+
+        if (stay.RoomList.Count > 0)
+        {
+            foreach (Room room in stay.RoomList)
+            {
+                counter++;
+                Console.WriteLine($"{counter})\t {room.RoomNumber}\t{stay}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"{guest.Name} has no rooms checked in.");
+        }
     }
 
 }
 
+// need to modify
 void ExtendStay()
 {
     Guest guest;
     Console.WriteLine();
-    DisplayAllGuests("Guests.csv",stayDict);
+    DisplayAllGuests("Guests.csv", stayDict);
     Console.WriteLine();
     Console.WriteLine("EXTEND STAY SYSTEM");
     Console.WriteLine("------------------");
@@ -489,6 +626,7 @@ void ExtendStay()
 
     } while (guest == null || guest.IsCheckedIn == false);
 
+
     Console.WriteLine("------------------------------------------------------");
     Console.WriteLine($"Current Checkout Date: {guest.HotelStay.CheckoutDate}");
     Console.WriteLine("------------------------------------------------------");
@@ -496,23 +634,47 @@ void ExtendStay()
     Console.Write("Please enter the number of days to extend: ");
     int noOfDays = IntChecker();
 
-    DateTime newCheckoutDate = guest.HotelStay.CheckoutDate.AddDays(noOfDays);
-    guest.HotelStay.CheckoutDate = newCheckoutDate;
+    // check if the same room is available when extended
+    bool? roomsAvailableToExtend = isRoomAvailAbleForExtensions(guest.HotelStay.RoomList, roomDict, guest.HotelStay,noOfDays);
 
-    Console.WriteLine($"{guest.Name}'s stay has been extended.");
-    Console.WriteLine();
-    Console.WriteLine("------------------------------------------------------");
-    Console.WriteLine($"New Checkout Date: {guest.HotelStay.CheckoutDate}");
-    Console.WriteLine("------------------------------------------------------");
-    Console.WriteLine();
+    if (roomsAvailableToExtend == true)
+    {
+        Console.WriteLine("Your rooms are available for extension.");
+        DateTime newCheckoutDate = guest.HotelStay.CheckoutDate.AddDays(noOfDays);
+        guest.HotelStay.CheckoutDate = newCheckoutDate;
+
+        Console.WriteLine($"{guest.Name}'s stay has been extended.");
+        Console.WriteLine();
+        Console.WriteLine("------------------------------------------------------");
+        Console.WriteLine($"New Checkout Date: {guest.HotelStay.CheckoutDate}");
+        Console.WriteLine("------------------------------------------------------");
+        Console.WriteLine();
+    }
+    else
+    {
+        Console.WriteLine("Your rooms are not available for extension.");
+    }
+
 
     // implement updating of file code here
 
 }
 
-Room SearchAvailRoom(int roomNum, IDictionary<int, Room> roomDict)
+
+Room SearchAvailRoom(int roomNum, IDictionary<int, Room> roomDict, Stay? rangeOfStay)
 {
-    List<int> roomNoList = UpdateStayDictFromFile("Stays.csv", stayDict);
+    List<int> roomNoList = new List<int>();
+
+    // if statement to determine whether need to display rooms based on current date or in a range of dates
+    switch (rangeOfStay)
+    {
+        case null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, DateTime.Now, null);
+            break;
+        case not null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, null, rangeOfStay);
+            break;
+    }
 
     foreach (int roomNo in roomNoList)
     {
@@ -530,20 +692,86 @@ Room SearchAvailRoom(int roomNum, IDictionary<int, Room> roomDict)
     return null;
 }
 
-Guest retrieveGuest(string passportNum)
+bool? isRoomAvailAbleForExtensions(List<Room> roomlist, IDictionary<int, Room> roomDict, Stay? rangeOfStay, int noOfDaysToExtend)
 {
-    List<Guest> guestList = DisplayAllGuests("Guests.csv", stayDict,"no");
+    List<int> roomNoList = new List<int>();
+    List<bool> allRoomsAvailableList = new List<bool>();
+    DateTime newCheckoutDate = rangeOfStay.CheckoutDate.AddDays(noOfDaysToExtend);
+    rangeOfStay.CheckoutDate = newCheckoutDate;
 
-    foreach (Guest guest in guestList)
+    Console.WriteLine(rangeOfStay.CheckoutDate);
+
+    // if statement to determine whether need to display rooms based on current date or in a range of dates
+    switch (rangeOfStay)
     {
-        if (passportNum.Equals(guest.PassportNum))
+        case null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, DateTime.Now, null);
+            break;
+        case not null:
+            roomNoList = UpdateStayDictFromFile(staysConn, stayDict, null, rangeOfStay);
+            break;
+    }
+
+    foreach (int roomNo in roomNoList)
+    {
+        if (roomDict[roomNo].IsAvail)
         {
-            return guest;
+            // check if the roomNum entered by the user matches with the availble rooms in the dictionary
+            foreach(Room room in roomlist)
+            {
+                if (roomNo == room.RoomNumber)
+                {
+                    allRoomsAvailableList.Add(true);
+                }
+            }
+
+        }
+        else { continue; }
+    }
+
+    if(roomlist.Count == allRoomsAvailableList.Count)
+    {
+        if (allRoomsAvailableList.Contains(true))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
     return null;
 }
+
+Guest retrieveGuest(string passportNum,bool searchBasedOnCheckInStatus = false)
+{
+    List<Guest> guestList = DisplayAllGuests(guestsConn, stayDict,"no");
+
+    foreach (Guest guest in guestList)
+    {
+        switch (searchBasedOnCheckInStatus)
+        {
+            case false:
+                if (passportNum.Equals(guest.PassportNum))
+                {
+                    return guest;
+                }
+                break;
+            case true:
+                if (passportNum.Equals(guest.PassportNum) && guest.IsCheckedIn == true)
+                {
+                    return guest;
+                }
+                break;
+            default:
+                Console.WriteLine("Error at retrieveGuest method!");
+                break;
+        }
+    }
+    return null;
+}
+
 
 
 string RepeatStringForLoop(string s, int n)
@@ -620,11 +848,11 @@ void menuSelection(int numb)
     switch (numb)
     {
         case 1:
-            DisplayAllGuests("Guests.csv", stayDict);
+            DisplayAllGuests(guestsConn, stayDict);
             standardClearingConsole();
             break;
         case 2:
-            DisplayAvailRooms(roomDict);
+            DisplayAvailRooms(roomDict,null,DateTime.Now);
             standardClearingConsole();
             break;
         case 3:
@@ -644,7 +872,7 @@ void menuSelection(int numb)
             standardClearingConsole();
             break;
         case 0:
-            Console.WriteLine("Bye");
+            Console.WriteLine("System exited..");
             break;
         default:
             Console.WriteLine("Please input a number from the options shown!");
@@ -670,7 +898,7 @@ try
 {
     do
     {
-        UpdateStayDictFromFile("Stays.csv", stayDict);
+        UpdateStayDictFromFile(staysConn, stayDict, DateTime.Now,null);
         menuShow();
         Console.Write("Enter your option : ");
         numbr = IntChecker();

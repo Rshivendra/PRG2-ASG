@@ -63,7 +63,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return $"{this.Status,-10} {this.Points,-10}";
+            return $"{this.Status,-23} {this.Points}";
         }
 
 
