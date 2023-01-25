@@ -201,14 +201,33 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
             Membership member = new Membership(status, points);
 
             List<string> guestsStays = SearchForCheckInCheckOutDates(staysConn, passportNum);
-
-            // Create a new Guest object
-            foreach (string stayDuration in guestsStays)
+            
+            if(guestsStays.Count > 0)
             {
-                string guestKey = passportNum + "-" + stayDuration;
-                checkedInStatus = searchForCheckedInStatus(staysConn, guestKey);
+                // Create a new Guest object
+                foreach (string stayDuration in guestsStays)
+                {
+                    string guestKey = passportNum + "-" + stayDuration;
+                    checkedInStatus = searchForCheckedInStatus(staysConn, guestKey);
 
-                Guest guest = new Guest(name, passportNum, stayDict[passportNum+"-"+stayDuration], member);
+                    Guest guest = new Guest(name, passportNum, stayDict[passportNum + "-" + stayDuration], member);
+                    guest.IsCheckedIn = checkedInStatus;
+                    guestList.Add(guest);
+
+                    // Display the information of the guest
+                    if (todisplay.ToLower() == "yes" && guestCounter == 0)
+                    {
+                        Console.WriteLine(guest.ToString());
+                    }
+                    guestCounter++;
+                }
+            }
+            // if the guestsStays contain nothing means its a new registerd guest
+            else
+            {
+                // empty stay because its a new registerd guest
+                Stay stay = new Stay();
+                Guest guest = new Guest(name, passportNum, stay, member);
                 guest.IsCheckedIn = checkedInStatus;
                 guestList.Add(guest);
 
@@ -219,6 +238,7 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
                 }
                 guestCounter++;
             }
+
 
         }
     }
