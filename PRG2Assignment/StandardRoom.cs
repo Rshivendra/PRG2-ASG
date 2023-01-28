@@ -26,7 +26,6 @@ namespace PRG2Assignment
             {
                 wifiCharge = 10;
             }
-
             if (RequireBreakfast == true)
             {
                 breakfastCharge = 20;
@@ -37,7 +36,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return base.ToString();
+            return $"{"Standard",-17}" + base.ToString();
         }
     }
 }

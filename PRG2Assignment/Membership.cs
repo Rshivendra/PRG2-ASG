@@ -43,21 +43,16 @@ namespace PRG2Assignment
 
         }
 
-        // to check if they can redeem points, must have (100 or 200)
         public bool RedeemPoints(int points)
         {
-            switch (this.Status.ToUpper())
+            if (Points - points < 0)
             {
-                case "SILVER":
-                    return true;
-                case "GOLD":
-                    return true;
-                case "ORDINARY":
-                    return false;
-                default:
-                    Console.WriteLine("An error occured");
-                    return false;
-
+                return false;
+            }
+            else 
+            {
+                Points = Points - points;
+                return true; 
             }
         }
 

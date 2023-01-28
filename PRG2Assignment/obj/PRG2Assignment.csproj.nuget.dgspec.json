@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Rajmohan Shivendra\\source\\repos\\PRG2_Asg\\PRG2Assignment\\PRG2Assignment.csproj": {}
+    "C:\\Pranav\\Year1\\Semester 2\\Programming 2\\ASG\\Pranav-Vijitharan\\PRG2Assignment\\PRG2Assignment\\PRG2Assignment.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Rajmohan Shivendra\\source\\repos\\PRG2_Asg\\PRG2Assignment\\PRG2Assignment.csproj": {
+    "C:\\Pranav\\Year1\\Semester 2\\Programming 2\\ASG\\Pranav-Vijitharan\\PRG2Assignment\\PRG2Assignment\\PRG2Assignment.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Rajmohan Shivendra\\source\\repos\\PRG2_Asg\\PRG2Assignment\\PRG2Assignment.csproj",
+        "projectUniqueName": "C:\\Pranav\\Year1\\Semester 2\\Programming 2\\ASG\\Pranav-Vijitharan\\PRG2Assignment\\PRG2Assignment\\PRG2Assignment.csproj",
         "projectName": "PRG2Assignment",
-        "projectPath": "C:\\Users\\Rajmohan Shivendra\\source\\repos\\PRG2_Asg\\PRG2Assignment\\PRG2Assignment.csproj",
-        "packagesPath": "C:\\Users\\Rajmohan Shivendra\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Rajmohan Shivendra\\source\\repos\\PRG2_Asg\\PRG2Assignment\\obj\\",
+        "projectPath": "C:\\Pranav\\Year1\\Semester 2\\Programming 2\\ASG\\Pranav-Vijitharan\\PRG2Assignment\\PRG2Assignment\\PRG2Assignment.csproj",
+        "packagesPath": "C:\\Users\\prana\\.nuget\\packages\\",
+        "outputPath": "C:\\Pranav\\Year1\\Semester 2\\Programming 2\\ASG\\Pranav-Vijitharan\\PRG2Assignment\\PRG2Assignment\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Rajmohan Shivendra\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\prana\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -49,8 +49,7 @@
             "net47",
             "net471",
             "net472",
-            "net48",
-            "net481"
+            "net48"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -59,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
         }
       }
     }

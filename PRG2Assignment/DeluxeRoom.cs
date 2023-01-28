@@ -30,7 +30,7 @@ namespace PRG2Assignment
 
         public override string ToString()
         {
-            return base.ToString();
+            return $"{"Deluxe",-17}" + base.ToString();
         }
     }
 }
