@@ -210,6 +210,9 @@ List<Guest> DisplayAllGuests(string filepath, IDictionary<string, Stay> stayDict
             // Create a new Guest object
             checkedInStatus = searchForCheckedInStatus(staysConn, passportNum);
             Guest guest = new Guest(name, passportNum, stayDict[passportNum], member);
+
+            //Console.WriteLine($"{guest.Name} has {stayDict[passportNum].RoomList.Count} rooms");
+
             guest.IsCheckedIn = checkedInStatus;
             guestList.Add(guest);
 
@@ -354,7 +357,7 @@ void CheckInGuest()
     DateTime checkinDate;
     DateTime checkoutDate;
 
-    DisplayAllGuests(guestsConn, stayDict);
+    List<Guest> guestList = DisplayAllGuests(guestsConn, stayDict);
 
     Console.WriteLine();
     Console.WriteLine("CHECK IN SYSTEM");
@@ -369,7 +372,6 @@ void CheckInGuest()
         else if (guest.IsCheckedIn == true) { Console.WriteLine("Please select a guest that is not checkedin!"); }
     } while (guest == null || guest.IsCheckedIn == true);
 
-    Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
     do
     {
         Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
@@ -381,7 +383,6 @@ void CheckInGuest()
         }
 
     } while (checkinDate < DateTime.Now);
-    
 
     do
     {
@@ -398,6 +399,7 @@ void CheckInGuest()
 
     Console.WriteLine();
     Stay stay = new Stay(checkinDate, checkoutDate);
+    guest.HotelStay.RoomList.Clear();
     while (selectAnotherRoom)
     {
         DisplayAvailRooms(roomDict, stay,stay.CheckinDate);
@@ -411,6 +413,8 @@ void CheckInGuest()
 
         // updating the availability
         room.IsAvail = false;
+        guest.HotelStay = stay;
+        guest.HotelStay.AddRoom(room);
 
         switch (room)
         {
@@ -473,7 +477,9 @@ void CheckInGuest()
                 break;
         }
 
-        
+        guest.IsCheckedIn = true;
+
+        startFileWritingProcess(guest, guestList);
 
         Console.Write("Do you want to select another room? [Y/N]: ");
         string anotherRoomChoice = Console.ReadLine();
@@ -490,12 +496,6 @@ void CheckInGuest()
         }
 
     }
-
-    // updating the Stay of the guest
-    guest.HotelStay = stay;
-
-    // updating on guest's checkedIn status
-    guest.IsCheckedIn = true;
 
     // need to update Stays.csv to update the room,checkedInStatus there
     // enter some code here
@@ -623,24 +623,31 @@ void CheckOutGuest()
     }
 }
 
-void startFileWritingProcess(Guest guest)
+void startFileWritingProcess(Guest guest, List<Guest> guestlist)
 {
     List<string> columnsToReiterate = new List<string>();
-    columnsToReiterate.Add("RoomNumber,Wifi,Breakfast,ExtraBed");
-    List<Guest> guestlist = DisplayAllGuests(guestsConn, stayDict, "no");
+    columnsToReiterate.Add(",RoomNumber,Wifi,Breakfast,ExtraBed");
 
     using (StreamReader reader = new StreamReader(staysConn))
     using (StreamWriter writer = File.CreateText("newfile.csv"))
     {
-        int highestNumForHeaderPrintingCounter = 0;
-        StringBuilder sb = new StringBuilder();
+        int highestNumForHeaderPrintingCounter = guest.HotelStay.RoomList.Count;
         string headers = "Name,PassportNumber,IsCheckedIn,CheckinDate,CheckoutDate";
 
         foreach(Guest guestFromList in guestlist)
         {
-            highestNumForHeaderPrintingCounter = guestFromList.HotelStay.RoomList.Count;
+            if(guestFromList.HotelStay.RoomList.Count > highestNumForHeaderPrintingCounter)
+            {
+                highestNumForHeaderPrintingCounter = guestFromList.HotelStay.RoomList.Count;
+            }
+            else
+            {
+                continue;
+            }
+            
         }
 
+        Console.WriteLine(highestNumForHeaderPrintingCounter);
         // printing of the columns
         for(int i = 0; i < highestNumForHeaderPrintingCounter; i++)
         {
@@ -649,20 +656,41 @@ void startFileWritingProcess(Guest guest)
                 headers += columns;
             }
         }
+        
 
+        Console.ReadKey();
         reader.ReadLine();
+        writer.WriteLine(headers);
         while (!reader.EndOfStream)
         {
+            StringBuilder sb = new StringBuilder();
             string line = reader.ReadLine();
             string[] parts = line.Split(',');
 
             if (parts[1].Equals(guest.PassportNum))
             {
-                
-                // code to write new data
-                // pranav can u do lol
-                // just print out the needed details of the guest
-                // then for the rooms part just run a foreach loop on the room list from guest's hotel stay
+                string data = parts[0] + "," + parts[1] + "," + guest.IsCheckedIn + "," + guest.HotelStay.CheckinDate.ToShortDateString() + "," + guest.HotelStay.CheckoutDate.ToShortDateString();
+
+                foreach (Room room in guest.HotelStay.RoomList)
+                {
+                    switch (room)
+                    {
+                        case StandardRoom:
+                            StandardRoom standardRoom = room as StandardRoom;
+                            data += "," + standardRoom.RoomNumber + "," + standardRoom.RequireWifi  + "," + standardRoom.RequireBreakfast + "," + false;
+                            break;
+                        case DeluxeRoom:
+                            DeluxeRoom deluxeRoom = room as DeluxeRoom;
+                            data += "," + deluxeRoom.RoomNumber + "," + false + "," + false + "," + deluxeRoom.AdditionalBed;
+                            break;
+                        default:
+                            Console.WriteLine("Error @ file writing process");
+                            break;
+                    }
+
+                }
+                Console.WriteLine(data);
+                writer.WriteLine(data);
             }
             else
             {
@@ -671,15 +699,17 @@ void startFileWritingProcess(Guest guest)
                 {
                     sb.Append($"{parts[i]},");
                 }
-
+                //Console.WriteLine($"Output for Row {parts[0]}");
+                //Console.WriteLine("--------------------------");
+                //Console.WriteLine(sb.ToString().TrimEnd(','));
+                //Console.ReadKey();
                 writer.WriteLine(sb.ToString().TrimEnd(','));
-                writer.Write('\n');
             }
            
-        }
-        // overwriting of the file here
-        // i gtg ;-;
+        }  
     }
+    File.Delete(staysConn);
+    File.Move("newfile.csv", staysConn);
 }
 
 void DisplayDetailsGuest()
@@ -725,24 +755,22 @@ void DisplayMonthlyBreakdown()
 {
     List <Guest> guestList = DisplayAllGuests(guestsConn, stayDict, "no");
 
+    int year = 0;
     double totalCharges = 0;
     IDictionary<string, double> monthlyCharges = new Dictionary<string, double>();
-    monthlyCharges.Add("Jan", 0);
-    monthlyCharges.Add("Feb", 0);
-    monthlyCharges.Add("Mar", 0);
-    monthlyCharges.Add("Apr", 0);
-    monthlyCharges.Add("May", 0);
-    monthlyCharges.Add("Jun", 0);
-    monthlyCharges.Add("Jul", 0);
-    monthlyCharges.Add("Aug", 0);
-    monthlyCharges.Add("Sep", 0);
-    monthlyCharges.Add("Oct", 0);
-    monthlyCharges.Add("Nov", 0);
-    monthlyCharges.Add("Dec", 0);
+    
+    do
+    {
+        Console.WriteLine();
+        Console.Write("Enter the year: ");
+        year = IntChecker();
+        if (year < 2000 || year > 2500) { Console.WriteLine("Please input a year after 2000.\n"); }
+    } while (year < 2000 || year > 2500);
 
-    Console.Write("Enter the year: ");
-    int year = Convert.ToInt32(Console.ReadLine());
-    Console.WriteLine();
+    for (int i = 0; i < 12; i++)
+    {
+        monthlyCharges.Add(new DateTime(year, i + 1, 1).ToString("MMM"), 0);
+    }
 
     foreach (Guest guest in guestList)
     {
