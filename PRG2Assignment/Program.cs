@@ -721,6 +721,51 @@ void DisplayDetailsGuest()
     }
 }
 
+void DisplayMonthlyBreakdown()
+{
+    List <Guest> guestList = DisplayAllGuests(guestsConn, stayDict, "no");
+
+    double totalCharges = 0;
+    IDictionary<string, double> monthlyCharges = new Dictionary<string, double>();
+    monthlyCharges.Add("Jan", 0);
+    monthlyCharges.Add("Feb", 0);
+    monthlyCharges.Add("Mar", 0);
+    monthlyCharges.Add("Apr", 0);
+    monthlyCharges.Add("May", 0);
+    monthlyCharges.Add("Jun", 0);
+    monthlyCharges.Add("Jul", 0);
+    monthlyCharges.Add("Aug", 0);
+    monthlyCharges.Add("Sep", 0);
+    monthlyCharges.Add("Oct", 0);
+    monthlyCharges.Add("Nov", 0);
+    monthlyCharges.Add("Dec", 0);
+
+    Console.Write("Enter the year: ");
+    int year = Convert.ToInt32(Console.ReadLine());
+    Console.WriteLine();
+
+    foreach (Guest guest in guestList)
+    {
+        if (guest.HotelStay.CheckoutDate.Year == year)
+        {
+            if (monthlyCharges.ContainsKey(guest.HotelStay.CheckoutDate.ToString("MMM")))
+            {
+                monthlyCharges[guest.HotelStay.CheckoutDate.ToString("MMM")] += guest.HotelStay.CalculateTotal();
+            }
+
+            totalCharges += guest.HotelStay.CalculateTotal();
+        }
+    }
+
+    foreach (KeyValuePair<string,double> kvp in monthlyCharges)
+    {
+        Console.WriteLine($"{kvp.Key} {year}:  ${kvp.Value}");
+    }
+
+    Console.WriteLine();
+    Console.WriteLine($"Total:  ${totalCharges}");
+}
+
 // need to modify
 void ExtendStay()
 {
@@ -924,6 +969,7 @@ void menuShow()
         "Check-Out Guest",
         "Display stay details of a guest",
         "Extends the stay by numbers of day",
+        "Display Monthly Charged Amounts Breakdown",
         "Exit"
     };
 
@@ -975,6 +1021,10 @@ void menuSelection(int numb)
             break;
         case 7:
             ExtendStay();
+            standardClearingConsole();
+            break;
+        case 8:
+            DisplayMonthlyBreakdown();
             standardClearingConsole();
             break;
         case 0:
