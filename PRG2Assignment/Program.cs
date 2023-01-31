@@ -6,11 +6,12 @@ using System.Text.RegularExpressions;
 using System.Text;
 
 // connections
-string staysConn = @"C:\Polytechnic_Year1\Polytechnic_sem_2\PRG_2\Assignment\Stays.csv";
+string staysConn = @"Stays.csv";
 string guestsConn = @"Guests.csv";
 string roomsConn = @"Rooms.csv";
 string archiveConn = @"StayArchive.csv";
 string pattern = @"^[A-Z]\d{7}[A-Z]$";
+int archiveHeaderCounter = 0;
 
 // dictionaries:
 IDictionary<string, Stay> stayDict = new Dictionary<string, Stay>();
@@ -702,7 +703,7 @@ void CheckOutGuest()
 
 }
 
-void startFileWritingProcess(Guest guest, List<Guest> guestlist)
+void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow = false)
 {
     List<string> columnsToReiterate = new List<string>();
     columnsToReiterate.Add(",RoomNumber,Wifi,Breakfast,ExtraBed");
@@ -766,26 +767,22 @@ void startFileWritingProcess(Guest guest, List<Guest> guestlist)
 
                 }
 
+                //le.AppendAllText(archiveConn, sb.ToString().TrimEnd(','));
+                //le.AppendAllText(archiveConn, "\n");
+
                 // appending previous data to the archive dataset
-                using (StreamWriter archiveWriter = new StreamWriter(archiveConn))
+                if (toDeleteRow)
                 {
-                    headers = "Name,PassportNumber,IsCheckedIn,CheckinDate,CheckoutDate";
-
-                    for (int i = 0; i < guest.HotelStay.RoomList.Count; i++)
+                    using (StreamWriter archiveWriter = new StreamWriter(archiveConn, true))
                     {
-                        foreach (string columns in columnsToReiterate)
+
+                        for (int i = 0; i < parts.Length; i++)
                         {
-                            headers += columns;
+                            sb.Append($"{parts[i]},");
                         }
-                    }
-                    archiveWriter.WriteLine(headers);
 
-                    for (int i = 0; i < parts.Length; i++)
-                    {
-                        sb.Append($"{parts[i]},");
+                        archiveWriter.WriteLine(sb.ToString().TrimEnd(','));
                     }
-
-                    archiveWriter.WriteLine(sb.ToString().TrimEnd(','));
                 }
 
                 writer.WriteLine(data);
@@ -924,7 +921,7 @@ List<Guest> InitArchive(string filepath)
 
     using (StreamReader reader = new StreamReader(archiveConn))
     {
-        reader.ReadLine();
+        //ader.ReadLine();
 
         while (!reader.EndOfStream)
         {
@@ -1035,8 +1032,7 @@ void ExtendStay()
         Console.WriteLine($"New Checkout Date: {guest.HotelStay.CheckoutDate}");
         Console.WriteLine("------------------------------------------------------");
         Console.WriteLine();
-        Console.WriteLine(ClonednewCheckoutDate);
-        startFileWritingProcess(guest, guestList);
+        startFileWritingProcess(guest, guestList, false);
     }
 }
 
@@ -1048,7 +1044,7 @@ void CancelStay()
     bool cancelAnotherRoom = true;
     int noOfRoomsCancelled = 0;
     Console.WriteLine();
-    DisplayAllGuests("Guests.csv", stayDict);
+    List<Guest> guestList = DisplayAllGuests("Guests.csv", stayDict);
     Console.WriteLine();
     Console.WriteLine("CANCEL ROOM SYSTEM");
     Console.WriteLine("------------------");
@@ -1104,6 +1100,7 @@ void CancelStay()
             break;
         }
 
+        
 
         if (roomsList.Count == 0)
         {
@@ -1128,6 +1125,7 @@ void CancelStay()
         }
     }
 
+    startFileWritingProcess(guest, guestList, false);
     Console.WriteLine();
     Console.WriteLine($"You will have to pay a total of ${noOfRoomsCancelled * 100} for the cancellation fee.");
     Console.WriteLine("Press any key to make payment.");
@@ -1321,6 +1319,10 @@ void menuSelection(int numb)
 
 }
 
+if (!File.Exists(archiveConn))
+{
+    File.Create(archiveConn).Close();
+}
 
 // main program
 int numbr;
