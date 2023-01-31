@@ -1,0 +1,2 @@
+Name,PassportNumber,IsCheckedIn,CheckinDate,CheckoutDate,RoomNumber,Wifi,Breakfast,ExtraBed
+Amelia,S1234567A,FALSE,15/11/2022,20/11/2022,101,TRUE,TRUE,FALSE
