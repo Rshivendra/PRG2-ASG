@@ -28,6 +28,13 @@ namespace PRG2Assignment
             return bedCharge;
         }
 
+        public override object Clone()
+        {
+            DeluxeRoom newdlxRoom = new DeluxeRoom(this.RoomNumber, this.BedConfiguration, this.DailyRate, this.IsAvail);
+            newdlxRoom.AdditionalBed = this.AdditionalBed;
+            return newdlxRoom;
+        }
+
         public override string ToString()
         {
             return $"{"Deluxe",-17}" + base.ToString();

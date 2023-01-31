@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PRG2Assignment
 {
-    abstract class Room
+    abstract class Room : ICloneable
     {
         // Attributes for Room Class
         public int RoomNumber { get; set; }
@@ -28,6 +28,9 @@ namespace PRG2Assignment
 
         // Method to find the if a guest made extra charges during his stay
         public abstract double CalculateCharges();
+
+        public abstract object Clone();
+
 
         public override string ToString()
         {

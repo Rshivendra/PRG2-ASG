@@ -11,10 +11,10 @@ namespace PRG2Assignment
         // Attributes for StandardRoom Class
         public bool RequireWifi { get; set; }
         public bool RequireBreakfast { get; set; }
-      
+
         // Constructors for StandardRoom Class
         public StandardRoom() : base() { }
-        public StandardRoom(int roomNo, string bedConfig, double dailyRate, bool isAvail) : base(roomNo, bedConfig, dailyRate, isAvail){ }
+        public StandardRoom(int roomNo, string bedConfig, double dailyRate, bool isAvail) : base(roomNo, bedConfig, dailyRate, isAvail) { }
 
         // Methods for StandardRoom Class
         public override double CalculateCharges()
@@ -32,6 +32,14 @@ namespace PRG2Assignment
             }
 
             return wifiCharge + breakfastCharge;
+        }
+
+        public override object Clone()
+        {
+            StandardRoom newstdRoom = new StandardRoom(this.RoomNumber, this.BedConfiguration, this.DailyRate, this.IsAvail);
+            newstdRoom.RequireWifi = this.RequireWifi;
+            newstdRoom.RequireBreakfast = this.RequireBreakfast;
+            return newstdRoom;
         }
 
         public override string ToString()

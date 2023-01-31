@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PRG2Assignment
 {
-    internal class Stay
+    internal class Stay : ICloneable
     {
         // Attributes for Stay Class
         public DateTime CheckinDate { get; set; }
@@ -38,6 +38,18 @@ namespace PRG2Assignment
                 total += room.CalculateCharges() * days + room.DailyRate * days;
             }
             return total;
+        }
+
+        public object Clone()
+        {
+            Stay newStay = new Stay();
+            newStay.CheckinDate = this.CheckinDate;
+            newStay.CheckoutDate = this.CheckoutDate;
+            foreach (Room room in this.RoomList)
+            {
+                newStay.RoomList.Add((Room)room.Clone());
+            }
+            return newStay;
         }
 
         public override string ToString()

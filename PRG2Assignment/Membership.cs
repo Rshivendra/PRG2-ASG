@@ -32,13 +32,26 @@ namespace PRG2Assignment
             this.Points += (int)totalCharges / 10;
 
             // check if the status has been changed
-            if (this.Points >= 100 && this.Status.ToUpper() != "SILVER")
+            if (Status.ToUpper() == "ORDINARY")
             {
-                this.Status = "Silver";
+                if (Points >= 100)
+                {
+                    Status = "Silver";
+                    Console.WriteLine("You have been upgraded to Silver Membership.\n");
+                }
+                else if (Points >= 200)
+                {
+                    Status = "Gold";
+                    Console.WriteLine("You have been upgraded to Gold Membership.\n");
+                }
             }
-            else if (this.Points >= 200 && this.Status.ToUpper() != "GOLD")
+            else if (Status.ToUpper() == "SILVER")
             {
-                this.Status = "Gold";
+                if (Points >= 200)
+                {
+                    Status = "Gold";
+                    Console.WriteLine("You have been upgraded to Gold Membership.\n");
+                }
             }
 
         }
