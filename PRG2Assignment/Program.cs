@@ -11,7 +11,6 @@ string guestsConn = @"Guests.csv";
 string roomsConn = @"Rooms.csv";
 string archiveConn = @"StayArchive.csv";
 string pattern = @"^[A-Z]\d{7}[A-Z]$";
-int archiveHeaderCounter = 0;
 
 // dictionaries:
 IDictionary<string, Stay> stayDict = new Dictionary<string, Stay>();
@@ -311,9 +310,13 @@ void DisplayAvailRooms(IDictionary<int, Room> roomDict, Stay? rangeOfStay, DateT
         else { continue; }
     }
 
+    if(availableRoomList.Count == 0)
+    {
+        Console.WriteLine("There are no available rooms Sorry!");
+    }
+
 }
 
-// NEEDS TESTING
 void RegisterGuest()
 {
     List<Guest> guestList = DisplayAllGuests(guestsConn, stayDict, "no");
@@ -326,13 +329,13 @@ void RegisterGuest()
 
     Console.Write("Please Enter Guest's Name: ");
     name = Console.ReadLine();
-    // check if passport inputted is of correct format
+    // check if passport inputed is of correct format
     do
     {
         Console.Write("Please Enter Guest's Passport Number: ");
         passportNo = Console.ReadLine().ToUpper();
         similarityBetweenPassports = similarPassportChecker(passportNo);
-        if (!Regex.IsMatch(passportNo, pattern)) { Console.WriteLine("Passport number is not valid"); }
+        if (!Regex.IsMatch(passportNo, pattern)) { Console.WriteLine("Please input the passport number in the following format.\ne.g. S4236232Q"); }
     } while (!Regex.IsMatch(passportNo, pattern) || similarityBetweenPassports == true);
 
 
@@ -380,8 +383,10 @@ void CheckInGuest()
     bool selectAnotherRoom = true;
     string roomType;
     int numbrOfCheckInGuests = 0;
+    int numberOfRoomsAdded = 0;
     DateTime checkinDate;
     DateTime checkoutDate;
+    
 
     List<Guest> guestList = DisplayAllGuests(guestsConn, stayDict);
 
@@ -403,7 +408,8 @@ void CheckInGuest()
             if (guest == null) { Console.WriteLine("Guest not found! Give a valid passport number!"); }
             else if (guest.IsCheckedIn == true) { Console.WriteLine("Please select a guest that is not checkedin!"); }
         } while (guest == null || guest.IsCheckedIn == true);
-
+        // clone the guest's current stay object before modifying
+        Stay guestsOldStayObject = (Stay)guest.HotelStay.Clone();
         do
         {
             Console.Write("Enter Checkin Date (dd/MM/yyyy): ");
@@ -434,114 +440,137 @@ void CheckInGuest()
         guest.HotelStay.RoomList.Clear();
         while (selectAnotherRoom)
         {
+            availableRoomList.Clear();
             DisplayAvailRooms(roomDict, stay, stay.CheckinDate);
-            Console.WriteLine();
-            do
+            // check to see if there are any available rooms
+            if(availableRoomList.Count > 0)
             {
-                Console.Write("Select an Available Room: ");
-                room = SearchAvailRoom(IntChecker(), roomDict, stay);
-                if (room == null) { Console.WriteLine("Room not found!"); }
-            } while (room == null);
+                Console.WriteLine();
+                do
+                {
+                    Console.Write("Select an Available Room: ");
+                    room = SearchAvailRoom(IntChecker(), roomDict, stay);
+                    if (room == null || room.IsAvail == false) { Console.WriteLine("Room not found!"); }
+                } while (room == null || room.IsAvail == false);
 
-            // updating the availability
-            room.IsAvail = false;
-            guest.HotelStay = stay;
-            guest.HotelStay.AddRoom(room);
+                // updating the availability
+                room.IsAvail = false;
+                guest.HotelStay = stay;
+                guest.HotelStay.AddRoom(room);
 
-            switch (room)
-            {
+                switch (room)
+                {
 
-                case StandardRoom:
-                    Console.WriteLine();
-                    Console.WriteLine("-----------------------");
-                    Console.WriteLine("Standard Room Selected!");
-                    Console.WriteLine("-----------------------");
-                    Console.WriteLine();
-                    StandardRoom stdRoom = (StandardRoom)room;
+                    case StandardRoom:
+                        Console.WriteLine();
+                        Console.WriteLine("-----------------------");
+                        Console.WriteLine("Standard Room Selected!");
+                        Console.WriteLine("-----------------------");
+                        Console.WriteLine();
+                        StandardRoom stdRoom = (StandardRoom)room;
 
-                    Console.Write("Would you require Wifi? [Y/N]: ");
-                    string wifi = Console.ReadLine();
-                    while (!ValidateInput(wifi))
-                    {
-                        Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
                         Console.Write("Would you require Wifi? [Y/N]: ");
-                        wifi = Console.ReadLine();
-                    }
+                        string wifi = Console.ReadLine();
+                        while (!ValidateInput(wifi))
+                        {
+                            Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                            Console.Write("Would you require Wifi? [Y/N]: ");
+                            wifi = Console.ReadLine();
+                        }
 
-                    Console.Write("Would you require Breakfast? [Y/N]: ");
-                    string breakfast = Console.ReadLine();
-                    while (!ValidateInput(breakfast))
-                    {
-                        Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
                         Console.Write("Would you require Breakfast? [Y/N]: ");
-                        breakfast = Console.ReadLine();
-                    }
+                        string breakfast = Console.ReadLine();
+                        while (!ValidateInput(breakfast))
+                        {
+                            Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                            Console.Write("Would you require Breakfast? [Y/N]: ");
+                            breakfast = Console.ReadLine();
+                        }
 
-                    // assigns True or False accordingly, and StringComparison.OrdinalIgnoreCase makes it so that it is case-sensitive
-                    stdRoom.RequireWifi = wifi.Equals("Y", StringComparison.OrdinalIgnoreCase);
-                    stdRoom.RequireBreakfast = breakfast.Equals("Y", StringComparison.OrdinalIgnoreCase);
+                        // assigns True or False accordingly, and StringComparison.OrdinalIgnoreCase makes it so that it is case-sensitive
+                        stdRoom.RequireWifi = wifi.Equals("Y", StringComparison.OrdinalIgnoreCase);
+                        stdRoom.RequireBreakfast = breakfast.Equals("Y", StringComparison.OrdinalIgnoreCase);
 
-                    break;
+                        break;
 
-                case DeluxeRoom:
-                    Console.WriteLine();
-                    Console.WriteLine("---------------------");
-                    Console.WriteLine("Deluxe Room Selected!");
-                    Console.WriteLine("---------------------");
-                    Console.WriteLine();
-                    DeluxeRoom dlxRoom = (DeluxeRoom)room;
+                    case DeluxeRoom:
+                        Console.WriteLine();
+                        Console.WriteLine("---------------------");
+                        Console.WriteLine("Deluxe Room Selected!");
+                        Console.WriteLine("---------------------");
+                        Console.WriteLine();
+                        DeluxeRoom dlxRoom = (DeluxeRoom)room;
 
-                    Console.Write("Would you require Additional Bed? [Y/N]: ");
-                    string bed = Console.ReadLine();
-                    while (!ValidateInput(bed))
-                    {
-                        Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
                         Console.Write("Would you require Additional Bed? [Y/N]: ");
-                        bed = Console.ReadLine();
+                        string bed = Console.ReadLine();
+                        while (!ValidateInput(bed))
+                        {
+                            Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                            Console.Write("Would you require Additional Bed? [Y/N]: ");
+                            bed = Console.ReadLine();
+                        }
+
+                        dlxRoom.AdditionalBed = bed.Equals("Y", StringComparison.OrdinalIgnoreCase);
+
+                        break;
+
+                    default:
+                        Console.WriteLine("An error has occured");
+                        break;
+                }
+
+                guest.IsCheckedIn = true;
+                // check if the number of rooms being added is 0 or the dates are empty.
+                if (numberOfRoomsAdded == 0)
+                {
+                    // check if the room objects are empty
+                    if (guestsOldStayObject.CheckinDate == DateTime.MinValue || guestsOldStayObject.CheckoutDate == DateTime.MinValue)
+                    {
+                        // if it is delete the old data and override it, and dont add it to archive
+                        startFileWritingProcess(guest, guestList, false);
                     }
+                    // check if the roomlist contains no rooms
+                    else if (guestsOldStayObject.RoomList.Count == 0)
+                    {
+                        // if it is delete the old data and override it, and dont add it to archive
+                        startFileWritingProcess(guest, guestList, false);
+                    }
+                    else
+                    {
+                        //if it is delete the old data and override it, and dont add it to archive
+                        startFileWritingProcess(guest, guestList);
+                    }
+                    numberOfRoomsAdded++;
+                }
+                else
+                {
+                    startFileWritingProcess(guest, guestList, false);
+                }
 
-                    dlxRoom.AdditionalBed = bed.Equals("Y", StringComparison.OrdinalIgnoreCase);
-
-                    break;
-
-                default:
-                    Console.WriteLine("An error has occured");
-                    break;
-            }
-
-            guest.IsCheckedIn = true;
-
-            startFileWritingProcess(guest, guestList);
-
-            Console.Write("Do you want to select another room? [Y/N]: ");
-            string anotherRoomChoice = Console.ReadLine();
-            while (!ValidateInput(anotherRoomChoice))
-            {
-                Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
                 Console.Write("Do you want to select another room? [Y/N]: ");
-                anotherRoomChoice = Console.ReadLine();
-            }
+                string anotherRoomChoice = Console.ReadLine();
+                while (!ValidateInput(anotherRoomChoice))
+                {
+                    Console.WriteLine("Invalid input! Please enter Y for Yes or N for No.");
+                    Console.Write("Do you want to select another room? [Y/N]: ");
+                    anotherRoomChoice = Console.ReadLine();
+                }
 
-            if (anotherRoomChoice.Equals("N", StringComparison.OrdinalIgnoreCase))
-            {
-                selectAnotherRoom = false;
+                if (anotherRoomChoice.Equals("N", StringComparison.OrdinalIgnoreCase))
+                {
+                    selectAnotherRoom = false;
+                    Console.WriteLine();
+                    Console.WriteLine($"{guest.Name} has been CheckedIn: {guest.IsCheckedIn}");
+                }
             }
-
+            else { break; }
+        
         }
-
-        // need to update Stays.csv to update the room,checkedInStatus there
-        // enter some code here
-
-        Console.WriteLine();
-        Console.WriteLine($"{guest.Name} has been CheckedIn: {guest.IsCheckedIn}");
-
-
 
         // methods for this method
         DateTime exactDate()
         {
             string format = "dd/MM/yyyy";
-
             DateTime formatteddate;
 
             while (!DateTime.TryParseExact(Console.ReadLine(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out formatteddate))
@@ -557,7 +586,6 @@ void CheckInGuest()
 
             return formatteddate;
         }
-
     }
     else
     {
@@ -566,7 +594,6 @@ void CheckInGuest()
         Console.WriteLine("All guests are checked in! sorry unable to check in a guest");
         Console.WriteLine("-----------------------------------------------------------");
     }
-
 
 }
 
@@ -652,7 +679,7 @@ void CheckOutGuest()
         guest.Member.EarnPoints(totalCost);
 
         Console.WriteLine();
-        Console.WriteLine($"{guest.Name}'s membership status has been updated.");
+        Console.WriteLine($"{guest.Name}'s membership has been updated.");
 
         if (guest.Member.Status.ToUpper() != "ORDINARY")
         {
@@ -661,7 +688,7 @@ void CheckOutGuest()
             Console.WriteLine($"Points - {guest.Member.Points}");
         }
 
-        startFileWritingProcess(guest, guestList);
+        startFileWritingProcess(guest, guestList,false);
 
         using (StreamReader reader = new StreamReader(guestsConn))
         using (StreamWriter writer = File.CreateText("newfile.csv"))
@@ -703,7 +730,7 @@ void CheckOutGuest()
 
 }
 
-void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow = false)
+void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow = true)
 {
     List<string> columnsToReiterate = new List<string>();
     columnsToReiterate.Add(",RoomNumber,Wifi,Breakfast,ExtraBed");
@@ -746,7 +773,7 @@ void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow
 
             if (parts[1].Equals(guest.PassportNum))
             {
-                string data = parts[0] + "," + parts[1] + "," + guest.IsCheckedIn + "," + guest.HotelStay.CheckinDate.ToShortDateString() + "," + guest.HotelStay.CheckoutDate.ToShortDateString();
+                string data = parts[0] + "," + parts[1] + "," + guest.IsCheckedIn + "," + guest.HotelStay.CheckinDate.ToShortDateString() + "," + guest.HotelStay.CheckoutDate.ToShortDateString(); ;
 
                 foreach (Room room in guest.HotelStay.RoomList)
                 {
@@ -764,11 +791,7 @@ void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow
                             Console.WriteLine("Error @ file writing process");
                             break;
                     }
-
                 }
-
-                //le.AppendAllText(archiveConn, sb.ToString().TrimEnd(','));
-                //le.AppendAllText(archiveConn, "\n");
 
                 // appending previous data to the archive dataset
                 if (toDeleteRow)
@@ -794,10 +817,6 @@ void startFileWritingProcess(Guest guest, List<Guest> guestlist,bool toDeleteRow
                 {
                     sb.Append($"{parts[i]},");
                 }
-                //Console.WriteLine($"Output for Row {parts[0]}");
-                //Console.WriteLine("--------------------------");
-                //Console.WriteLine(sb.ToString().TrimEnd(','));
-                //Console.ReadKey();
                 writer.WriteLine(sb.ToString().TrimEnd(','));
             }
 
@@ -882,8 +901,11 @@ void DisplayMonthlyBreakdown()
         }
     }
 
-    LoadingPreviousChargesFromArchiveFileIntoMonthlyChargesDictionary();
-
+    if (new FileInfo(archiveConn).Length != 0)
+    {
+        LoadingPreviousChargesFromArchiveFileIntoMonthlyChargesDictionary();
+    }
+    
     foreach (KeyValuePair<string,double> kvp in monthlyCharges)
     {
         Console.WriteLine($"{kvp.Key} {year}:  ${kvp.Value}");
@@ -921,8 +943,6 @@ List<Guest> InitArchive(string filepath)
 
     using (StreamReader reader = new StreamReader(archiveConn))
     {
-        //ader.ReadLine();
-
         while (!reader.EndOfStream)
         {
             string line = reader.ReadLine();
@@ -982,7 +1002,7 @@ void ExtendStay()
 
     do
     {
-        Console.Write("Please Enter Guest's Passport Number to check in: ");
+        Console.Write("Please Enter Guest's Passport Number for Extension: ");
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
         if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
@@ -999,28 +1019,26 @@ void ExtendStay()
     int noOfDays = IntChecker();
 
     Stay clonedStayObject = (Stay)guest.HotelStay.Clone();
-    
+
     // check if the room is available or not
     DateTime ClonednewCheckoutDate = clonedStayObject.CheckoutDate.AddDays(noOfDays);
     clonedStayObject.CheckoutDate = ClonednewCheckoutDate;
 
-    DisplayAvailRooms(roomDict, clonedStayObject, clonedStayObject.CheckinDate,false,guest);
-    foreach(Room roomOfGuest in guest.HotelStay.RoomList)
+    DisplayAvailRooms(roomDict, clonedStayObject, clonedStayObject.CheckinDate, false, guest);
+    foreach (Room roomOfGuest in guest.HotelStay.RoomList)
     {
-        guestsRoomsThatAreAvail.Add(SearchAvailRoom(roomOfGuest.RoomNumber,roomDict,clonedStayObject));
+        guestsRoomsThatAreAvail.Add(SearchAvailRoom(roomOfGuest.RoomNumber, roomDict, clonedStayObject));
     }
 
     int OccurencesOfNonAvailRooms = guestsRoomsThatAreAvail.Count(x => x == null);
+    // refresh the dictionaries
+    DisplayAvailRooms(roomDict, clonedStayObject, clonedStayObject.CheckinDate, false);
     // if the number of rooms that are not available is between 0 and the length of the guestsRoomsThatAreAvail list
     if (OccurencesOfNonAvailRooms <= guestsRoomsThatAreAvail.Count && OccurencesOfNonAvailRooms > 0)
     {
         Console.WriteLine();
         Console.WriteLine($"Sorry your rooms are not available at this checkout date {ClonednewCheckoutDate}");
         Console.WriteLine();
-        // if they cannoot extend their stay for the current rooms, check in a new batch of rooms
-        guest.IsCheckedIn = false;
-        startFileWritingProcess(guest, guestList);
-        CheckInGuest();
     }
     else
     {
@@ -1055,7 +1073,7 @@ void CancelStay()
         string passportNum = Console.ReadLine().ToUpper();
         guest = retrieveGuest(passportNum);
         if (guest == null) { Console.WriteLine("Guest not found!\nGive a valid passport number!"); }
-        else if (guest.IsCheckedIn == false) { Console.WriteLine("Please select a Guest that is not checked in"); }
+        else if (guest.IsCheckedIn == false) { Console.WriteLine("Please select a Guest that is checked in"); }
         else if (DateTime.Now >= guest.HotelStay.CheckinDate && DateTime.Now <= guest.HotelStay.CheckoutDate) { Console.WriteLine("Room cannot be cancelled"); }
     } while (guest == null || guest.IsCheckedIn == false);
 
@@ -1100,8 +1118,6 @@ void CancelStay()
             break;
         }
 
-        
-
         if (roomsList.Count == 0)
         {
             guest.IsCheckedIn = false;
@@ -1138,6 +1154,7 @@ Room SearchAvailRoom(int roomNum, IDictionary<int, Room> roomDict, Stay? rangeOf
 {
     foreach (Room availRoom in availableRoomList)
     {
+
         if (availRoom.IsAvail)
         {
             // check if the roomNum entered by the user matches with the availble rooms in the dictionary
@@ -1180,8 +1197,7 @@ Guest retrieveGuest(string passportNum, bool searchBasedOnCheckInStatus = false)
     return null;
 }
 
-
-
+// to format the output
 string RepeatStringForLoop(string s, int n)
 {
     var result = s;
@@ -1326,18 +1342,6 @@ if (!File.Exists(archiveConn))
 
 // main program
 int numbr;
-do
-{
-    UpdateStayDictFromFile(staysConn, stayDict, DateTime.Now, null);
-    menuShow();
-    Console.Write("Enter your option : ");
-    numbr = IntChecker();
-    menuSelection(numbr);
-} while (numbr != 0);
-
-
-
-/*int numbr;
 try
 {
     do
@@ -1352,7 +1356,6 @@ try
 {
     Console.WriteLine(ex.Message);
 }
-*/
 
 
 Console.WriteLine("Press any Key to exit....");
